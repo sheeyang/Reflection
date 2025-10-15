@@ -48,19 +48,13 @@ constexpr bool is_reflectable_v = requires { ReflectionInfo<T>::fields; };
 
 #define FIELD_PAIR(CLASS, FIELD) std::make_pair(#FIELD, &CLASS::FIELD)
 
-// Helper to check if a type is a std::tuple
+// Helper concept to check if a type is a std::tuple
 template <typename T>
-constexpr bool is_tuple_v = false;
+concept is_tuple = requires { std::tuple_size<T>::value; };
 
-template <typename... Ts>
-constexpr bool is_tuple_v<std::tuple<Ts...>> = true;
-
-// Helper to check if a type is a std::pair
+// Helper concept to check if a type is a std::pair
 template <typename T>
-constexpr bool is_pair_v = false;
-
-template <typename T1, typename T2>
-constexpr bool is_pair_v<std::pair<T1, T2>> = true;
+concept is_pair = requires { typename T::first_type; typename T::second_type; };
 
 // Helper concept to check if a type is iterable (has size, begin, end)
 template <typename T>
@@ -149,7 +143,7 @@ namespace Reflex
         {
             std::cout << indent << name << " = \"" << (value ? value : "null") << "\"\n";
         }
-        else if constexpr (is_tuple_v<ValueType>)
+        else if constexpr (is_tuple<ValueType>)
         {
             std::cout << indent << name << " = (\n";
             std::apply([&](auto &...args)
@@ -158,7 +152,7 @@ namespace Reflex
                 ((print_value(indent + "  ", std::to_string(i++), args, nest_level + 1)), ...); }, value);
             std::cout << indent << ")\n";
         }
-        else if constexpr (is_pair_v<ValueType>)
+        else if constexpr (is_pair<ValueType>)
         {
             std::cout << indent << name << " = {\n";
             print_value(indent + "  ", "first", value.first, nest_level + 1);
