@@ -156,6 +156,13 @@ namespace Reflex
         {
             std::cout << indent << name << " = \"" << (value ? value : "null") << "\"\n";
         }
+        else if constexpr (is_pair<ValueType>)
+        {
+            std::cout << indent << name << " = {\n";
+            print_value(indent + "  ", "first", value.first, nest_level + 1);
+            print_value(indent + "  ", "second", value.second, nest_level + 1);
+            std::cout << indent << "}\n";
+        }
         else if constexpr (is_tuple<ValueType>)
         {
             std::cout << indent << name << " = (\n";
@@ -164,13 +171,6 @@ namespace Reflex
                 int i = 0;
                 ((print_value(indent + "  ", std::to_string(i++), args, nest_level + 1)), ...); }, value);
             std::cout << indent << ")\n";
-        }
-        else if constexpr (is_pair<ValueType>)
-        {
-            std::cout << indent << name << " = {\n";
-            print_value(indent + "  ", "first", value.first, nest_level + 1);
-            print_value(indent + "  ", "second", value.second, nest_level + 1);
-            std::cout << indent << "}\n";
         }
         else if constexpr (is_iterable_v<ValueType>)
         {

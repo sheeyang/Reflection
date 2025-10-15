@@ -136,17 +136,17 @@ int main()
     DeeplyNested dn{{456, {4, 5.0f, 6.0}, {false, 'z', 789, 101112, 131415L, 161718LL, 200, 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
     Reflex::print(dn);
 
-    // ComplexTypes ct{
-    //     "Hello, World!",
-    //     "Reflect in C++",
-    //     {1.1, 2.2, 3.3},
-    //     {10, 20, 30, 40, 50},
-    //     {"pi", 3.14f},
-    //     {{"pi", 3.14f}, {"e", 2.71f}},
-    //     {{1, "one"}, {2, "two"}, {3, "three"}},
-    //     {0.1, 0.2, 0.3, 0.4, 0.5},
-    //     {100, 200.0f, "three hundred"}};
-    // Reflex::print(ct);
+    ComplexTypes ct{
+        "Hello, World!",
+        "Reflect in C++",
+        {1.1, 2.2, 3.3},
+        {10, 20, 30, 40, 50},
+        {"pi", 3.14f},
+        {{"pi", 3.14f}, {"e", 2.71f}},
+        {{1, "one"}, {2, "two"}, {3, "three"}},
+        {0.1, 0.2, 0.3, 0.4, 0.5},
+        {100, 200.0f, "three hundred"}};
+    Reflex::print(ct);
 
     // Reflex::set_field_value(ct, "str", "Goodbye, World.");
     // std::cout << "Updated str: " << Reflex::get_field_value<std::string>(ct, "str") << "\n";
