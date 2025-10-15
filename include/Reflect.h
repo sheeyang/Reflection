@@ -207,7 +207,7 @@ namespace Reflex
     }
 } // namespace Reflex
 
-#define REFLECT(CLASS_NAME, ...)                                                                                                     \
+#define REFLECT_FIELDS(CLASS_NAME, ...)                                                                                              \
     template <>                                                                                                                      \
     struct ReflectionInfo<CLASS_NAME>                                                                                                \
     {                                                                                                                                \
@@ -215,7 +215,7 @@ namespace Reflex
         static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
     };
 
-#define REFLECT_R(CLASS_NAME, ...)                                                                                                  \
+#define REFLECT_CUSTOM(CLASS_NAME, ...)                                                                                             \
     template <>                                                                                                                     \
     struct ReflectionInfo<CLASS_NAME>                                                                                               \
     {                                                                                                                               \
