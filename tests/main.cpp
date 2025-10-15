@@ -59,7 +59,7 @@ struct ComplexTypes
     std::vector<int> vec;
     // std::map<std::string, float> mp;
     // std::unordered_map<int, std::string> ump;
-    // std::list<double> lst;
+    std::list<double> lst;
     std::tuple<int, float, std::string> tpl;
 };
 REFLECT(ComplexTypes,
@@ -67,6 +67,7 @@ REFLECT(ComplexTypes,
         str,
         arr,
         vec,
+        lst,
         tpl)
 
 struct NestedComplex
@@ -97,22 +98,22 @@ int main()
     // DeeplyNested dn{{456, {4, 5.0f, 6.0}, {false, 'z', 789, 101112, 131415L, 161718LL, 200, 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
     // Reflex::print(dn);
 
-    // ComplexTypes ct{
-    //     "Hello, World!",
-    //     "Reflect in C++",
-    //     {1.1, 2.2, 3.3},
-    //     {10, 20, 30, 40, 50},
-    //     // {{"pi", 3.14f}, {"e", 2.71f}},
-    //     // {{1, "one"}, {2, "two"}, {3, "three"}},
-    //     // {0.1, 0.2, 0.3, 0.4, 0.5},
-    //     {100, 200.0f, "three hundred"}};
-    // Reflex::print(ct);
+    ComplexTypes ct{
+        "Hello, World!",
+        "Reflect in C++",
+        {1.1, 2.2, 3.3},
+        {10, 20, 30, 40, 50},
+        // {{"pi", 3.14f}, {"e", 2.71f}},
+        // {{1, "one"}, {2, "two"}, {3, "three"}},
+        {0.1, 0.2, 0.3, 0.4, 0.5},
+        {100, 200.0f, "three hundred"}};
+    Reflex::print(ct);
 
-    NestedComplex nc{
-        {{"one", "two"}, {"three", "four", "five"}, {"six"}},
-        {{{1, 2, 3}, {4, 5, 6}}},
-        {{{{1, 1.1f, 1.11}, {2, 2.2f, 2.22}, {3, 3.3f, 3.33}}, {{4, 4.4f, 4.44}, {5, 5.5f, 5.55}, {6, 6.6f, 6.66}}}}};
-    Reflex::print(nc);
+    // NestedComplex nc{
+    //     {{"one", "two"}, {"three", "four", "five"}, {"six"}},
+    //     {{{1, 2, 3}, {4, 5, 6}}},
+    //     {{{{1, 1.1f, 1.11}, {2, 2.2f, 2.22}, {3, 3.3f, 3.33}}, {{4, 4.4f, 4.44}, {5, 5.5f, 5.55}, {6, 6.6f, 6.66}}}}};
+    // Reflex::print(nc);
 
     // auto names = Reflex<Simple>::get_field_names();
     // for (const auto &name : names)
