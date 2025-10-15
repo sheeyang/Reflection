@@ -73,7 +73,7 @@ namespace Reflex
     {
         if constexpr (has_reflector_v<T>)
         {
-            auto reflector = ReflectionInfo<T>::from(obj);
+            auto reflector = ReflectionInfo<T>::reflect(obj);
             std::apply([&](auto &&...field)
                        { (([&]()
                            {
@@ -83,7 +83,7 @@ namespace Reflex
                             for_each_field(val, func, nest_level + 1);
                         } }()),
                           ...); }, ReflectionInfo<T>::fields);
-            obj = ReflectionInfo<T>::to(reflector);
+            obj = ReflectionInfo<T>::create(reflector);
         }
         else
         {
@@ -116,11 +116,11 @@ namespace Reflex
 
         if constexpr (has_reflector_v<T>)
         {
-            auto reflector = ReflectionInfo<T>::from(obj);
+            auto reflector = ReflectionInfo<T>::reflect(obj);
             std::apply([&](auto &&...fields)
                        { ((setter_func(fields.first, reflector.*(fields.second))),
                           ...); }, ReflectionInfo<T>::fields);
-            obj = ReflectionInfo<T>::to(reflector);
+            obj = ReflectionInfo<T>::create(reflector);
         }
         else
         {
@@ -222,12 +222,12 @@ namespace Reflex
         using Reflector = CLASS_NAME::Reflector;                                                                                    \
         static constexpr const char *class_name = #CLASS_NAME;                                                                      \
         static constexpr auto fields = std::make_tuple(EXPAND_MACROS(Reflector, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
-        static Reflector from(const CLASS_NAME &obj)                                                                                \
+        static CLASS_NAME create(const Reflector &r)                                                                                \
         {                                                                                                                           \
-            return CLASS_NAME::Reflector::from(obj);                                                                                \
+            return CLASS_NAME::Reflector::create(r);                                                                                \
         }                                                                                                                           \
-        static CLASS_NAME to(Reflector &r)                                                                                          \
+        static Reflector reflect(const CLASS_NAME &obj)                                                                             \
         {                                                                                                                           \
-            return CLASS_NAME::Reflector::to(r);                                                                                    \
+            return CLASS_NAME::Reflector::reflect(obj);                                                                             \
         }                                                                                                                           \
     };

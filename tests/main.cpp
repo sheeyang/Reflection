@@ -97,7 +97,7 @@ struct ContainsNotReflected
         int a;
         float b;
 
-        static ContainsNotReflected to(Reflector &r)
+        static ContainsNotReflected create(const Reflector &r)
         {
             ContainsNotReflected obj;
             obj.nr.x = r.a;
@@ -105,7 +105,7 @@ struct ContainsNotReflected
             return obj;
         }
 
-        static Reflector from(const ContainsNotReflected &obj)
+        static Reflector reflect(const ContainsNotReflected &obj)
         {
             Reflector r;
             r.a = obj.nr.x;
@@ -133,20 +133,20 @@ int main()
     // Nested n{123, {1, 2.0f, 3.0}, {true, 'y', 456, 789, 101112L, 131415LL, 200, 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
     // Reflex::print(n);
 
-    DeeplyNested dn{{456, {4, 5.0f, 6.0}, {false, 'z', 789, 101112, 131415L, 161718LL, 200, 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
-    Reflex::print(dn);
+    // DeeplyNested dn{{456, {4, 5.0f, 6.0}, {false, 'z', 789, 101112, 131415L, 161718LL, 200, 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
+    // Reflex::print(dn);
 
-    ComplexTypes ct{
-        "Hello, World!",
-        "Reflect in C++",
-        {1.1, 2.2, 3.3},
-        {10, 20, 30, 40, 50},
-        {"pi", 3.14f},
-        {{"pi", 3.14f}, {"e", 2.71f}},
-        {{1, "one"}, {2, "two"}, {3, "three"}},
-        {0.1, 0.2, 0.3, 0.4, 0.5},
-        {100, 200.0f, "three hundred"}};
-    Reflex::print(ct);
+    // ComplexTypes ct{
+    //     "Hello, World!",
+    //     "Reflect in C++",
+    //     {1.1, 2.2, 3.3},
+    //     {10, 20, 30, 40, 50},
+    //     {"pi", 3.14f},
+    //     {{"pi", 3.14f}, {"e", 2.71f}},
+    //     {{1, "one"}, {2, "two"}, {3, "three"}},
+    //     {0.1, 0.2, 0.3, 0.4, 0.5},
+    //     {100, 200.0f, "three hundred"}};
+    // Reflex::print(ct);
 
     // Reflex::set_field_value(ct, "str", "Goodbye, World.");
     // std::cout << "Updated str: " << Reflex::get_field_value<std::string>(ct, "str") << "\n";
@@ -162,13 +162,13 @@ int main()
     //     {{{{1, 1.1f, 1.11}, {2, 2.2f, 2.22}, {3, 3.3f, 3.33}}, {{4, 4.4f, 4.44}, {5, 5.5f, 5.55}, {6, 6.6f, 6.66}}}}};
     // Reflex::print(nc);
 
-    // ContainsNotReflected cnr{{123, 4.56f}};
-    // Reflex::print(cnr);
-    // std::cout << "nr.x = " << cnr.nr.x << ", nr.y = " << cnr.nr.y << "\n";
-    // Reflex::set_field_value(cnr, "a", 789);
-    // Reflex::set_field_value(cnr, "b", 0.12f);
-    // Reflex::print(cnr);
-    // std::cout << "nr.x = " << cnr.nr.x << ", nr.y = " << cnr.nr.y << "\n";
+    ContainsNotReflected cnr{{123, 4.56f}};
+    Reflex::print(cnr);
+    std::cout << "nr.x = " << cnr.nr.x << ", nr.y = " << cnr.nr.y << "\n";
+    Reflex::set_field_value(cnr, "a", 789);
+    Reflex::set_field_value(cnr, "b", 0.12f);
+    Reflex::print(cnr);
+    std::cout << "nr.x = " << cnr.nr.x << ", nr.y = " << cnr.nr.y << "\n";
 
     // auto names = Reflex<Simple>::get_field_names();
     // for (const auto &name : names)
