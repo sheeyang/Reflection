@@ -114,8 +114,8 @@ int main()
         {100, 200.0f, "three hundred"}};
     Reflex::print(ct);
 
-    Reflex::set_field_value(ct, "str", "Bye, World.");
-    Reflex::print(ct);
+    Reflex::get_field_value<std::string>(ct, "str") = "Hello again, World!";
+    std::cout << "Updated str: " << Reflex::get_field_value<std::string>(ct, "str") << "\n";
 
     // NestedComplex nc{
     //     {{"one", "two"}, {"three", "four", "five"}, {"six"}},

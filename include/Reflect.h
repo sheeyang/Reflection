@@ -97,6 +97,28 @@ namespace Reflex
                       ...); }, ReflectionInfo<T>::fields);
     }
 
+    template <typename FieldType, typename T>
+    static FieldType &get_field_value(T &obj, std::string_view field_name)
+    {
+        FieldType *result = nullptr;
+        std::apply([&](auto &&...fields)
+                   { (([&]()
+                       {
+            if (std::string_view(fields.first) == field_name) {
+                using ActualFieldType = std::decay_t<decltype(obj.*(fields.second))>;
+                if constexpr (std::is_same_v<ActualFieldType, FieldType>) {
+                    result = &(obj.*(fields.second));
+                }
+            } }()),
+                      ...); }, ReflectionInfo<T>::fields);
+
+        if (result == nullptr)
+        {
+            throw std::runtime_error(std::string("Field '") + std::string(field_name) + "' not found or type mismatch");
+        }
+        return *result;
+    }
+
     // Helper function to print any value recursively
     template <typename T>
     static void print_value(std::string_view indent, std::string_view name, T &value, int nest_level)
