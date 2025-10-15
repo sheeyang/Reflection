@@ -70,16 +70,17 @@ namespace Reflex
     static void print(T &obj)
     {
 
-        std::cout << "Class: " << ReflectionInfo<T>::class_name << "\n";
+        std::cout << "Type: " << ReflectionInfo<T>::class_name << "\n";
         for_each_field(obj, [](const std::string &name, auto &value, int nest_level)
                        {
             std::string indent(2 + nest_level * 2, ' ');
-            if constexpr (is_reflectable_v<std::decay_t<decltype(value)>>) {
-                // Nested reflectable type
-                std::cout << indent << name << " (" << ReflectionInfo<std::decay_t<decltype(value)>>::class_name << "):\n";
-            } else if constexpr(std::is_fundamental_v<std::decay_t<decltype(value)>>) {
+            if constexpr(std::is_fundamental_v<std::decay_t<decltype(value)>>) {
                 // Primitive type
                 std::cout << indent << name << " = " << value << "\n";
+            } 
+            else if constexpr (is_reflectable_v<std::decay_t<decltype(value)>>) {
+                // Nested reflectable type
+                std::cout << indent << name << " (" << ReflectionInfo<std::decay_t<decltype(value)>>::class_name << "):\n";
             } 
             else {
                 // Fallback for non-primitive, non-reflectable types
