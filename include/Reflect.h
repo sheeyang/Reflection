@@ -121,7 +121,7 @@ namespace Reflex
 
     // Helper function to print any value recursively
     template <typename T>
-    static void print_value(std::string_view indent, std::string_view name, T &value, int nest_level)
+    static void print_value(const std::string &indent, std::string_view name, T &value, int nest_level)
     {
         using ValueType = std::decay_t<T>;
         if constexpr (std::is_same_v<ValueType, bool>)
@@ -151,14 +151,14 @@ namespace Reflex
             std::apply([&](auto &...args)
                        {
                 int i = 0;
-                ((print_value(indent, std::to_string(i++), args, nest_level + 1)), ...); }, value);
+                ((print_value(indent + "  ", std::to_string(i++), args, nest_level + 1)), ...); }, value);
             std::cout << indent << ")\n";
         }
         else if constexpr (is_pair_v<ValueType>)
         {
             std::cout << indent << name << " = {\n";
-            print_value(indent, "first", value.first, nest_level + 1);
-            print_value(indent, "second", value.second, nest_level + 1);
+            print_value(indent + "  ", "first", value.first, nest_level + 1);
+            print_value(indent + "  ", "second", value.second, nest_level + 1);
             std::cout << indent << "}\n";
         }
         else if constexpr (requires { value.size(); value.begin(); value.end(); })
@@ -168,7 +168,7 @@ namespace Reflex
             int i = 0;
             for (auto &elem : value)
             {
-                print_value(indent, std::to_string(i++), elem, nest_level + 1);
+                print_value(indent + "  ", std::to_string(i++), elem, nest_level + 1);
             }
             std::cout << indent << "]\n";
         }
