@@ -60,6 +60,9 @@ concept is_pair = requires { typename T::first_type; typename T::second_type; };
 template <typename T>
 concept is_iterable_v = requires(T value) { value.size(); value.begin(); value.end(); };
 
+template <typename T>
+concept has_reflector_v = requires { typename T::Reflector; };
+
 namespace Reflex
 {
     template <typename T>
@@ -68,16 +71,32 @@ namespace Reflex
     template <typename T>
     static void for_each_field(T &obj, auto &&func, int nest_level = 0)
     {
-
-        std::apply([&](auto &&...field)
-                   { (([&]()
-                       {
-            auto &val = obj.*(field.second);
-            func(field.first, val, nest_level);
-            if constexpr (is_reflectable_v<std::decay_t<decltype(val)>>) {
-                for_each_field(val, func, nest_level + 1);
-            } }()),
-                      ...); }, ReflectionInfo<T>::fields);
+        if constexpr (has_reflector_v<T>)
+        {
+            auto reflector = ReflectionInfo<T>::from(obj);
+            std::apply([&](auto &&...field)
+                       { (([&]()
+                           {
+                        auto &val = reflector.*(field.second);
+                        func(field.first, val, nest_level);
+                        if constexpr (is_reflectable_v<std::decay_t<decltype(val)>>) {
+                            for_each_field(val, func, nest_level + 1);
+                        } }()),
+                          ...); }, ReflectionInfo<T>::fields);
+            obj = ReflectionInfo<T>::to(reflector);
+        }
+        else
+        {
+            std::apply([&](auto &&...field)
+                       { (([&]()
+                           {
+                        auto &val = obj.*(field.second);
+                        func(field.first, val, nest_level);
+                        if constexpr (is_reflectable_v<std::decay_t<decltype(val)>>) {
+                            for_each_field(val, func, nest_level + 1);
+                        } }()),
+                          ...); }, ReflectionInfo<T>::fields);
+        }
     }
 
     template <typename T, typename U>
@@ -201,4 +220,21 @@ namespace Reflex
     {                                                                                                                                \
         static constexpr const char *class_name = #CLASS_NAME;                                                                       \
         static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
+    };
+
+#define REFLECT_R(CLASS_NAME, ...)                                                                                                  \
+    template <>                                                                                                                     \
+    struct ReflectionInfo<CLASS_NAME>                                                                                               \
+    {                                                                                                                               \
+        using Reflector = CLASS_NAME::Reflector;                                                                                    \
+        static constexpr const char *class_name = #CLASS_NAME;                                                                      \
+        static constexpr auto fields = std::make_tuple(EXPAND_MACROS(Reflector, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
+        static Reflector from(const CLASS_NAME &obj)                                                                                \
+        {                                                                                                                           \
+            return CLASS_NAME::Reflector::from(obj);                                                                                \
+        }                                                                                                                           \
+        static CLASS_NAME to(Reflector &r)                                                                                          \
+        {                                                                                                                           \
+            return CLASS_NAME::Reflector::to(r);                                                                                    \
+        }                                                                                                                           \
     };
