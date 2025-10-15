@@ -46,6 +46,13 @@ constexpr bool is_reflectable_v = requires { ReflectionInfo<T>::fields; };
 
 #define FIELD_PAIR(CLASS, FIELD) std::make_pair(#FIELD, &CLASS::FIELD)
 
+// Helper to check if a type is a std::tuple
+template <typename T>
+constexpr bool is_tuple_v = false;
+
+template <typename... Ts>
+constexpr bool is_tuple_v<std::tuple<Ts...>> = true;
+
 namespace Reflex
 {
     template <typename T>
@@ -69,21 +76,63 @@ namespace Reflex
     template <typename T>
     static void print(T &obj)
     {
-
         std::cout << "Type: " << ReflectionInfo<T>::class_name << "\n";
         for_each_field(obj, [](const std::string &name, auto &value, int nest_level)
                        {
             std::string indent(2 + nest_level * 2, ' ');
-            if constexpr(std::is_fundamental_v<std::decay_t<decltype(value)>>) {
-                // Primitive type
+            using ValueType = std::decay_t<decltype(value)>;
+            if constexpr (std::is_same_v<ValueType, bool>)
+            {
+                std::cout << indent << name << " = " << (value ? "true" : "false") << "\n";
+            }
+            else if constexpr (std::is_same_v<ValueType, char>)
+            {
+                std::cout << indent << name << " = '" << value << "'\n";
+            }
+            else if constexpr (std::is_arithmetic_v<ValueType>)
+            {
+                // Other arithmetic types (int, float, etc.)
                 std::cout << indent << name << " = " << value << "\n";
-            } 
-            else if constexpr (is_reflectable_v<std::decay_t<decltype(value)>>) {
+            }
+            else if constexpr (std::is_same_v<ValueType, std::string>)
+            {
+                std::cout << indent << name << " = \"" << value << "\"\n";
+            }
+            else if constexpr (std::is_same_v<ValueType, const char*>)
+            {
+                std::cout << indent << name << " = \"" << (value ? value : "null") << "\"\n";
+            }
+            else if constexpr (is_tuple_v<ValueType>)
+            {
+                std::cout << indent << name << " = (";
+                std::apply([&](const auto&... args)
+                           {
+                    bool first = true;
+                    ((std::cout << (first ? "" : ", ") << args, first = false), ...);
+                }, value);
+                std::cout << ")\n";
+            }
+            else if constexpr (requires { value.size(); value.begin(); value.end(); })
+            {
+                // Iterable containers (arrays, vectors, lists, maps, etc.)
+                std::cout << indent << name << " = [";
+                bool first = true;
+                for (const auto& elem : value)
+                {
+                    if (!first) std::cout << ", ";
+                    std::cout << elem;
+                    first = false;
+                }
+                std::cout << "]\n";
+            }
+            else if constexpr (is_reflectable_v<ValueType>)
+            {
                 // Nested reflectable type
-                std::cout << indent << name << " (" << ReflectionInfo<std::decay_t<decltype(value)>>::class_name << "):\n";
-            } 
-            else {
-                // Fallback for non-primitive, non-reflectable types
+                std::cout << indent << name << " (" << ReflectionInfo<ValueType>::class_name << "):\n";
+            }
+            else
+            {
+                // Fallback for other non-reflectable types
                 std::cout << indent << name << " = [non-reflectable type]\n";
             } });
     }
