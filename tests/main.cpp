@@ -57,6 +57,7 @@ struct ComplexTypes
     std::string str;
     std::array<double, 3> arr;
     std::vector<int> vec;
+    std::pair<std::string, float> pair;
     std::map<std::string, float> mp;
     std::unordered_map<int, std::string> ump;
     std::list<double> lst;
@@ -67,6 +68,7 @@ REFLECT(ComplexTypes,
         str,
         arr,
         vec,
+        pair,
         mp,
         ump,
         lst,
@@ -105,6 +107,7 @@ int main()
         "Reflect in C++",
         {1.1, 2.2, 3.3},
         {10, 20, 30, 40, 50},
+        {"pi", 3.14f},
         {{"pi", 3.14f}, {"e", 2.71f}},
         {{1, "one"}, {2, "two"}, {3, "three"}},
         {0.1, 0.2, 0.3, 0.4, 0.5},
