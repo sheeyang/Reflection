@@ -102,32 +102,30 @@ namespace Reflex
     template <typename T, typename U>
     static void set_field_value(T &obj, std::string_view field_name, U &&value)
     {
+        const auto setter_func = [&](std::string_view name, auto &val)
+        {
+            if (name == field_name)
+            {
+                using FieldType = std::decay_t<decltype(val)>;
+                if constexpr (std::is_assignable_v<FieldType &, decltype(value)>)
+                {
+                    val = std::forward<U>(value);
+                }
+            }
+        };
+
         if constexpr (has_reflector_v<T>)
         {
             auto reflector = ReflectionInfo<T>::from(obj);
             std::apply([&](auto &&...fields)
-                       { (([&]()
-                           {
-                if (std::string_view(fields.first) == field_name) {
-                    using FieldType = std::decay_t<decltype(reflector.*(fields.second))>;
-                    if constexpr (std::is_assignable_v<FieldType &, decltype(value)>) {
-                        reflector.*(fields.second) = std::forward<U>(value);
-                    }
-                } }()),
+                       { ((setter_func(fields.first, reflector.*(fields.second))),
                           ...); }, ReflectionInfo<T>::fields);
             obj = ReflectionInfo<T>::to(reflector);
         }
         else
         {
             std::apply([&](auto &&...fields)
-                       { (([&]()
-                           {
-            if (std::string_view(fields.first) == field_name) {
-                using FieldType = std::decay_t<decltype(obj.*(fields.second))>;
-                if constexpr (std::is_assignable_v<FieldType &, decltype(value)>) {
-                    obj.*(fields.second) = std::forward<U>(value);
-                }
-            } }()),
+                       { ((setter_func(fields.first, obj.*(fields.second))),
                           ...); }, ReflectionInfo<T>::fields);
         }
     }
