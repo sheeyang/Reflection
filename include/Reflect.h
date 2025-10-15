@@ -77,10 +77,16 @@ class Impl
         for_each_field(obj, [](const std::string &name, auto &value, int nest_level)
                        {
             std::string indent(2 + nest_level * 2, ' ');
-            if constexpr (std::is_fundamental_v<std::decay_t<decltype(value)>>) {
-                std::cout << indent << name << " = " << value << "\n";
-            } else {
+            if constexpr (is_reflectable_v<std::decay_t<decltype(value)>>) {
+                // Nested reflectable type
                 std::cout << indent << name << " (" << Reflex<std::decay_t<decltype(value)>>::class_name << "):\n";
+            } else if constexpr(std::is_fundamental_v<std::decay_t<decltype(value)>>) {
+                // Primitive type
+                std::cout << indent << name << " = " << value << "\n";
+            } 
+            else {
+                // Fallback for non-primitive, non-reflectable types
+                std::cout << indent << name << " = [non-reflectable type]\n";
             } });
     }
 };
