@@ -52,13 +52,27 @@ constexpr bool is_reflectable = requires { Reflex<T>::fields; };
         static constexpr const char *class_name = #CLASS_NAME;                                                                       \
         static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
         static constexpr size_t field_count() { return std::tuple_size_v<decltype(fields)>; }                                        \
-        static void for_each_field(CLASS_NAME &obj, auto &&func)                                                                     \
+        static void for_each_field(CLASS_NAME &obj, auto &&func, int nest_level = 0)                                                 \
         {                                                                                                                            \
             std::apply([&](auto &&...field) { (([&]() {                                                                                                           \
                     auto &val = obj.*(field.second);                                                                                 \
-                    func(field.first, val);                                                                                          \
+                    func(field.first, val, nest_level);                                                                                          \
                     if constexpr (is_reflectable<std::decay_t<decltype(val)>>) {                                                    \
-                        Reflex<std::decay_t<decltype(val)>>::for_each_field(val, func);                                             \
+                        Reflex<std::decay_t<decltype(val)>>::for_each_field(val, func, nest_level + 1);                           \
                     } }()), ...); }, fields);                                                        \
+        }                                                                                                                            \
+        static void print(CLASS_NAME &obj)                                                                                           \
+        {                                                                                                                            \
+            std::cout << "Class: " << class_name << "\n";                                                                            \
+            for_each_field(obj, [](const std::string &name, auto &value, int nest_level) {                                             \
+                std::string indent(2 + nest_level * 2, ' ');                                                                            \
+                if constexpr (std::is_fundamental_v<std::decay_t<decltype(value)>>)                                                  \
+                {                                                                                                                    \
+                    std::cout << indent << name << " = " << value << "\n";                                                          \
+                }                                                                                                                    \
+                else                                                                                                               \
+                {                                                                                                                    \
+                    std::cout << indent << name << " (" << Reflex<std::decay_t<decltype(value)>>::class_name << "):\n";            \
+                } });                                       \
         }                                                                                                                            \
     };
