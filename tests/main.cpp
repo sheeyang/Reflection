@@ -62,9 +62,8 @@ int main()
 
     ReflectionInfo<Simple> info;
     std::cout << info.class_name << "\n";
-    std::apply([&](auto &&...field)
-               { ((std::cout << field.first << " = " << s.*(field.second) << "\n"), ...); },
-               info.fields);
+    ReflectionInfo<Simple>::for_each_field(s, [](const char *name, auto &value)
+                                           { std::cout << name << " = " << value << "\n"; });
 
     // Reflect<Simple>::for_each_field(s, [](const std::string &name, auto &value)
     //                                 { std::cout << name << " = " << value << "\n"; });

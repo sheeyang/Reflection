@@ -47,4 +47,9 @@ struct ReflectionInfo;
     {                                                                                                                                \
         static constexpr const char *class_name = #CLASS_NAME;                                                                       \
         static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
+        static constexpr size_t field_count() { return std::tuple_size_v<decltype(fields)>; }                                        \
+        static void for_each_field(CLASS_NAME &obj, auto &&func)                                                                     \
+        {                                                                                                                            \
+            std::apply([&](auto &&...field) { (func(field.first, obj.*(field.second)), ...); }, fields);                             \
+        }                                                                                                                            \
     };
