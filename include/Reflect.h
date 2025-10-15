@@ -185,10 +185,9 @@ namespace Reflex
         }
         else if constexpr (is_reflectable_v<ValueType>)
         {
-            // Nested reflectable type
+            // Nested reflectable type - just print the header, don't recurse
+            // The recursion is already handled by for_each_field
             std::cout << indent << name << " (" << ReflectionInfo<ValueType>::class_name << "):\n";
-            for_each_field(value, [&](std::string_view sub_name, auto &sub_value, int)
-                           { print_value(indent, sub_name, sub_value, nest_level + 1); }, nest_level + 1);
         }
         else
         {

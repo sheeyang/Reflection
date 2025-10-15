@@ -119,7 +119,7 @@ REFLECT_R(ContainsNotReflected, a, b)
 int main()
 {
 
-    Simple s{42, 3.14f, 2.718};
+    // Simple s{42, 3.14f, 2.718};
 
     // std::cout << Reflex<Simple>::class_name << "\n";
     // std::cout << "Field count: " << Reflex<Simple>::field_count() << "\n";
@@ -133,8 +133,8 @@ int main()
     // Nested n{123, {1, 2.0f, 3.0}, {true, 'y', 456, 789, 101112L, 131415LL, 200, 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
     // Reflex::print(n);
 
-    // DeeplyNested dn{{456, {4, 5.0f, 6.0}, {false, 'z', 789, 101112, 131415L, 161718LL, 200, 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
-    // Reflex::print(dn);
+    DeeplyNested dn{{456, {4, 5.0f, 6.0}, {false, 'z', 789, 101112, 131415L, 161718LL, 200, 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
+    Reflex::print(dn);
 
     // ComplexTypes ct{
     //     "Hello, World!",
@@ -162,13 +162,13 @@ int main()
     //     {{{{1, 1.1f, 1.11}, {2, 2.2f, 2.22}, {3, 3.3f, 3.33}}, {{4, 4.4f, 4.44}, {5, 5.5f, 5.55}, {6, 6.6f, 6.66}}}}};
     // Reflex::print(nc);
 
-    ContainsNotReflected cnr{{123, 4.56f}};
-    Reflex::print(cnr);
-    std::cout << "nr.x = " << cnr.nr.x << ", nr.y = " << cnr.nr.y << "\n";
-    Reflex::set_field_value(cnr, "a", 789);
-    Reflex::set_field_value(cnr, "b", 0.12f);
-    Reflex::print(cnr);
-    std::cout << "nr.x = " << cnr.nr.x << ", nr.y = " << cnr.nr.y << "\n";
+    // ContainsNotReflected cnr{{123, 4.56f}};
+    // Reflex::print(cnr);
+    // std::cout << "nr.x = " << cnr.nr.x << ", nr.y = " << cnr.nr.y << "\n";
+    // Reflex::set_field_value(cnr, "a", 789);
+    // Reflex::set_field_value(cnr, "b", 0.12f);
+    // Reflex::print(cnr);
+    // std::cout << "nr.x = " << cnr.nr.x << ", nr.y = " << cnr.nr.y << "\n";
 
     // auto names = Reflex<Simple>::get_field_names();
     // for (const auto &name : names)
