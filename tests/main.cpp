@@ -164,9 +164,11 @@ int main()
 
     ContainsNotReflected cnr{{123, 4.56f}};
     Reflex::print(cnr);
-    // Reflex::set_field_value(cnr, "a", 789);
-    // Reflex::set_field_value(cnr, "b", 0.12f);
-    // Reflex::print(cnr);
+    std::cout << "nr.x = " << cnr.nr.x << ", nr.y = " << cnr.nr.y << "\n";
+    Reflex::set_field_value(cnr, "a", 789);
+    Reflex::set_field_value(cnr, "b", 0.12f);
+    Reflex::print(cnr);
+    std::cout << "nr.x = " << cnr.nr.x << ", nr.y = " << cnr.nr.y << "\n";
 
     // auto names = Reflex<Simple>::get_field_names();
     // for (const auto &name : names)

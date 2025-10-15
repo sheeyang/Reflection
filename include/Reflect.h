@@ -102,39 +102,83 @@ namespace Reflex
     template <typename T, typename U>
     static void set_field_value(T &obj, std::string_view field_name, U &&value)
     {
-        std::apply([&](auto &&...fields)
-                   { (([&]()
-                       {
+        if constexpr (has_reflector_v<T>)
+        {
+            auto reflector = ReflectionInfo<T>::from(obj);
+            std::apply([&](auto &&...fields)
+                       { (([&]()
+                           {
+                if (std::string_view(fields.first) == field_name) {
+                    using FieldType = std::decay_t<decltype(reflector.*(fields.second))>;
+                    if constexpr (std::is_assignable_v<FieldType &, decltype(value)>) {
+                        reflector.*(fields.second) = std::forward<U>(value);
+                    }
+                } }()),
+                          ...); }, ReflectionInfo<T>::fields);
+            obj = ReflectionInfo<T>::to(reflector);
+        }
+        else
+        {
+            std::apply([&](auto &&...fields)
+                       { (([&]()
+                           {
             if (std::string_view(fields.first) == field_name) {
                 using FieldType = std::decay_t<decltype(obj.*(fields.second))>;
                 if constexpr (std::is_assignable_v<FieldType &, decltype(value)>) {
                     obj.*(fields.second) = std::forward<U>(value);
                 }
             } }()),
-                      ...); }, ReflectionInfo<T>::fields);
-    }
-
-    template <typename FieldType, typename T>
-    static FieldType &get_field_value(T &obj, std::string_view field_name)
-    {
-        FieldType *result = nullptr;
-        std::apply([&](auto &&...fields)
-                   { (([&]()
-                       {
-            if (std::string_view(fields.first) == field_name) {
-                using ActualFieldType = std::decay_t<decltype(obj.*(fields.second))>;
-                if constexpr (std::is_same_v<ActualFieldType, FieldType>) {
-                    result = &(obj.*(fields.second));
-                }
-            } }()),
-                      ...); }, ReflectionInfo<T>::fields);
-
-        if (result == nullptr)
-        {
-            throw std::runtime_error(std::string("Field '") + std::string(field_name) + "' not found or type mismatch");
+                          ...); }, ReflectionInfo<T>::fields);
         }
-        return *result;
     }
+
+    // Dangerous: returns reference to a member of a local variable if T has Reflector
+    // TODO: figure out a safe way to do this
+    // template <typename FieldType, typename T>
+    // static FieldType &get_field_value(T &obj, std::string_view field_name)
+    // {
+    //     if constexpr (has_reflector_v<T>)
+    //     {
+    //         auto reflector = ReflectionInfo<T>::from(obj);
+    //         FieldType *result = nullptr;
+    //         std::apply([&](auto &&...fields)
+    //                    { (([&]()
+    //                        {
+    //             if (std::string_view(fields.first) == field_name) {
+    //                 using ActualFieldType = std::decay_t<decltype(reflector.*(fields.second))>;
+    //                 if constexpr (std::is_same_v<ActualFieldType, FieldType>) {
+    //                     result = &(reflector.*(fields.second));
+    //                 }
+    //             } }()),
+    //                       ...); }, ReflectionInfo<T>::fields);
+
+    //         if (result == nullptr)
+    //         {
+    //             throw std::runtime_error(std::string("Field '") + std::string(field_name) + "' not found or type mismatch");
+    //         }
+    //         return *result;
+    //     }
+    //     else
+    //     {
+    //         FieldType *result = nullptr;
+    //         std::apply([&](auto &&...fields)
+    //                    { (([&]()
+    //                        {
+    //         if (std::string_view(fields.first) == field_name) {
+    //             using ActualFieldType = std::decay_t<decltype(obj.*(fields.second))>;
+    //             if constexpr (std::is_same_v<ActualFieldType, FieldType>) {
+    //                 result = &(obj.*(fields.second));
+    //             }
+    //         } }()),
+    //                       ...); }, ReflectionInfo<T>::fields);
+
+    //         if (result == nullptr)
+    //         {
+    //             throw std::runtime_error(std::string("Field '") + std::string(field_name) + "' not found or type mismatch");
+    //         }
+    //         return *result;
+    //     }
+    // }
 
     // Helper function to print any value recursively
     template <typename T>
