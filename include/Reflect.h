@@ -62,6 +62,10 @@ constexpr bool is_pair_v = false;
 template <typename T1, typename T2>
 constexpr bool is_pair_v<std::pair<T1, T2>> = true;
 
+// Helper concept to check if a type is iterable (has size, begin, end)
+template <typename T>
+concept is_iterable_v = requires(T value) { value.size(); value.begin(); value.end(); };
+
 namespace Reflex
 {
     template <typename T>
@@ -161,7 +165,7 @@ namespace Reflex
             print_value(indent + "  ", "second", value.second, nest_level + 1);
             std::cout << indent << "}\n";
         }
-        else if constexpr (requires { value.size(); value.begin(); value.end(); })
+        else if constexpr (is_iterable_v<ValueType>)
         {
             // Iterable containers (arrays, vectors, lists, maps, etc.)
             std::cout << indent << name << " = [\n";
