@@ -60,21 +60,21 @@ int main()
 {
     Simple s{42, 3.14f, 2.718};
 
-    ReflectionInfo<Simple> info;
+    Reflex<Simple> info;
     std::cout << info.class_name << "\n";
-    ReflectionInfo<Simple>::for_each_field(s, [](const char *name, auto &value)
-                                           { std::cout << name << " = " << value << "\n"; });
+    Reflex<Simple>::for_each_field(s, [](const char *name, auto &value)
+                                   { std::cout << name << " = " << value << "\n"; });
 
-    // Reflect<Simple>::for_each_field(s, [](const std::string &name, auto &value)
+    // Reflex<Simple>::for_each_field(s, [](const std::string &name, auto &value)
     //                                 { std::cout << name << " = " << value << "\n"; });
 
-    // auto names = Reflect<Simple>::get_field_names();
+    // auto names = Reflex<Simple>::get_field_names();
     // for (const auto &name : names)
     // {
     //     std::cout << "Field name: " << name << "\n";
     // }
 
-    // size_t count = Reflect<Simple>::field_count();
+    // size_t count = Reflex<Simple>::field_count();
     // std::cout << "Field count: " << count << "\n";
 
     // auto value = get_field_by_name(s, "a");
