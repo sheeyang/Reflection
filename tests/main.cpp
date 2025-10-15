@@ -1,6 +1,13 @@
 #include "../include/Reflect.h"
 
 #include <iostream>
+#include <string>
+#include <array>
+#include <vector>
+#include <map>
+#include <unordered_map>
+#include <list>
+#include <tuple>
 
 struct Simple
 {
@@ -44,18 +51,18 @@ struct DeeplyNested
 };
 REFLECT(DeeplyNested, n, s)
 
-// struct ComplexTypes
-// {
-//     const char *cstr;
-//     std::string str;
-//     std::vector<int> vec;
-//     std::map<std::string, float> mp;
-//     std::unordered_map<int, std::string> ump;
-//     std::list<double> lst;
-//     std::array<double, 3> arr;
-//     std::tuple<int, float, std::string> tpl;
-// };
-// REFLECT(ComplexTypes, cstr, str, vec, mp, ump, lst, arr, tpl)
+struct ComplexTypes
+{
+    const char *cstr;
+    std::string str;
+    std::array<double, 3> arr;
+    std::vector<int> vec;
+    std::map<std::string, float> mp;
+    std::unordered_map<int, std::string> ump;
+    std::list<double> lst;
+    std::tuple<int, float, std::string> tpl;
+};
+REFLECT(ComplexTypes, cstr, str, vec, mp, ump, lst, arr, tpl)
 
 int main()
 {
@@ -67,15 +74,26 @@ int main()
     // Reflex<Simple>::for_each_field(s, print_field);
     // std::cout << "\n";
 
-    Reflex::print(s);
+    // Reflex::print(s);
 
     // AllPrimitiveTypes apt{true, 'x', 123, 456, 789L, 101112LL, 200, 30000, 4000000, 50000000UL, 6000000000ULL, 1.23f, 4.56, 7.89L};
 
-    Nested n{123, {1, 2.0f, 3.0}, {true, 'y', 456, 789, 101112L, 131415LL, 200, 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
-    Reflex::print(n);
+    // Nested n{123, {1, 2.0f, 3.0}, {true, 'y', 456, 789, 101112L, 131415LL, 200, 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
+    // Reflex::print(n);
 
-    DeeplyNested dn{{456, {4, 5.0f, 6.0}, {false, 'z', 789, 101112, 131415L, 161718LL, 200, 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
-    Reflex::print(dn);
+    // DeeplyNested dn{{456, {4, 5.0f, 6.0}, {false, 'z', 789, 101112, 131415L, 161718LL, 200, 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
+    // Reflex::print(dn);
+
+    ComplexTypes ct{
+        "Hello, World!",
+        "Reflect in C++",
+        {1, 2, 3, 4, 5},
+        {{"one", 1.0f}, {"two", 2.0f}},
+        {{1, "one"}, {2, "two"}},
+        {3.14, 2.71, 1.61},
+        {9.81, 3.67, 1.41},
+        {42, 3.14f, "tuple"}};
+    Reflex::print(ct);
 
     // auto names = Reflex<Simple>::get_field_names();
     // for (const auto &name : names)
