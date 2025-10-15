@@ -10,24 +10,24 @@ struct Simple
 };
 REFLECT(Simple, a, b, c)
 
-// struct AllPrimitiveTypes
-// {
-//     bool a;
-//     char b;
-//     short c;
-//     int d;
-//     long e;
-//     long long f;
-//     unsigned char g;
-//     unsigned short h;
-//     unsigned int i;
-//     unsigned long j;
-//     unsigned long long k;
-//     float l;
-//     double m;
-//     long double n;
-// };
-// REFLECT(AllPrimitiveTypes, a, b, c, d, e, f, g, h, i, j, k, l, m, n)
+struct AllPrimitiveTypes
+{
+    bool a;
+    char b;
+    short c;
+    int d;
+    long e;
+    long long f;
+    unsigned char g;
+    unsigned short h;
+    unsigned int i;
+    unsigned long j;
+    unsigned long long k;
+    float l;
+    double m;
+    long double n;
+};
+REFLECT(AllPrimitiveTypes, a, b, c, d, e, f, g, h, i, j, k, l, m, n)
 
 // struct Nested
 // {
@@ -60,8 +60,11 @@ int main()
 {
     Simple s{42, 3.14f, 2.718};
 
-    Reflex<Simple> info;
-    std::cout << info.class_name << "\n";
+    // Reflex<Simple> info;
+    // std::cout << info.class_name << "\n";
+
+    std::cout << Reflex<Simple>::class_name << "\n";
+    std::cout << "Field count: " << Reflex<Simple>::field_count() << "\n";
     Reflex<Simple>::for_each_field(s, [](const char *name, auto &value)
                                    { std::cout << name << " = " << value << "\n"; });
 
