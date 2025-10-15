@@ -54,6 +54,13 @@ constexpr bool is_tuple_v = false;
 template <typename... Ts>
 constexpr bool is_tuple_v<std::tuple<Ts...>> = true;
 
+// Helper to check if a type is a std::pair
+template <typename T>
+constexpr bool is_pair_v = false;
+
+template <typename T1, typename T2>
+constexpr bool is_pair_v<std::pair<T1, T2>> = true;
+
 namespace Reflex
 {
     template <typename T>
@@ -108,6 +115,13 @@ namespace Reflex
                 int i = 0;
                 ((print_value(indent + "  ", std::to_string(i++), args, nest_level + 1)), ...); }, value);
             std::cout << indent << ")\n";
+        }
+        else if constexpr (is_pair_v<ValueType>)
+        {
+            std::cout << indent << name << " = {\n";
+            print_value(indent + "  ", "first", value.first, nest_level + 1);
+            print_value(indent + "  ", "second", value.second, nest_level + 1);
+            std::cout << indent << "}\n";
         }
         else if constexpr (requires { value.size(); value.begin(); value.end(); })
         {
