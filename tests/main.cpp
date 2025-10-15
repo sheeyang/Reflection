@@ -29,12 +29,12 @@ struct AllPrimitiveTypes
 };
 REFLECT(AllPrimitiveTypes, a, b, c, d, e, f, g, h, i, j, k, l, m, n)
 
-// struct Nested
-// {
-//     Simple s;
-//     AllPrimitiveTypes apt;
-// };
-// REFLECT(Nested, s, apt)
+struct Nested
+{
+    Simple s;
+    AllPrimitiveTypes apt;
+};
+REFLECT(Nested, s, apt)
 
 // struct DeeplyNested
 // {
@@ -59,7 +59,12 @@ REFLECT(AllPrimitiveTypes, a, b, c, d, e, f, g, h, i, j, k, l, m, n)
 int main()
 {
     auto print_field = [](const char *name, auto &value)
-    { std::cout << name << " = " << value << "\n"; };
+    {
+        if constexpr (std::is_fundamental_v<std::decay_t<decltype(value)>>)
+        {
+            std::cout << name << " = " << value << "\n";
+        }
+    };
 
     Simple s{42, 3.14f, 2.718};
 
@@ -67,14 +72,21 @@ int main()
     std::cout << "Field count: " << Reflex<Simple>::field_count() << "\n";
     Reflex<Simple>::for_each_field(s, print_field);
 
-    AllPrimitiveTypes apt{true, 'x', 123, 456, 789L, 101112LL, 200, 30000, 4000000, 50000000UL, 6000000000ULL, 1.23f, 4.56, 7.89L};
-    std::cout << "\n"
-              << Reflex<AllPrimitiveTypes>::class_name << "\n";
-    std::cout << "Field count: " << Reflex<AllPrimitiveTypes>::field_count() << "\n";
-    Reflex<AllPrimitiveTypes>::for_each_field(apt, print_field);
+    // AllPrimitiveTypes apt{true, 'x', 123, 456, 789L, 101112LL, 200, 30000, 4000000, 50000000UL, 6000000000ULL, 1.23f, 4.56, 7.89L};
+    // std::cout << "\n"
+    //           << Reflex<AllPrimitiveTypes>::class_name << "\n";
+    // std::cout << "Field count: " << Reflex<AllPrimitiveTypes>::field_count() << "\n";
+    // Reflex<AllPrimitiveTypes>::for_each_field(apt, print_field);
 
     // Reflex<Simple>::for_each_field(s, [](const std::string &name, auto &value)
     //                                 { std::cout << name << " = " << value << "\n"; });
+
+    Nested n{{1, 2.0f, 3.0}, {true, 'y', 456, 789, 101112L, 131415LL, 200, 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
+
+    std::cout << "\n"
+              << Reflex<Nested>::class_name << "\n";
+    std::cout << "Field count: " << Reflex<Nested>::field_count() << "\n";
+    Reflex<Nested>::for_each_field(n, print_field);
 
     // auto names = Reflex<Simple>::get_field_names();
     // for (const auto &name : names)

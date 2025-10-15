@@ -1,6 +1,7 @@
 #pragma once
 
 #include <tuple>
+#include <type_traits>
 
 // Count arguments (supports up to 20)
 #define COUNT_ARGS(...) COUNT_ARGS_IMPL(__VA_ARGS__, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
@@ -39,6 +40,9 @@
 template <typename T>
 struct Reflex;
 
+template <typename T>
+constexpr bool is_reflectable = requires { Reflex<T>::fields; };
+
 #define FIELD_PAIR(CLASS, FIELD) std::make_pair(#FIELD, &CLASS::FIELD)
 
 #define REFLECT(CLASS_NAME, ...)                                                                                                     \
@@ -50,6 +54,11 @@ struct Reflex;
         static constexpr size_t field_count() { return std::tuple_size_v<decltype(fields)>; }                                        \
         static void for_each_field(CLASS_NAME &obj, auto &&func)                                                                     \
         {                                                                                                                            \
-            std::apply([&](auto &&...field) { (func(field.first, obj.*(field.second)), ...); }, fields);                             \
+            std::apply([&](auto &&...field) { (([&]() {                                                                                                           \
+                    auto &val = obj.*(field.second);                                                                                 \
+                    func(field.first, val);                                                                                          \
+                    if constexpr (is_reflectable<std::decay_t<decltype(val)>>) {                                                    \
+                        Reflex<std::decay_t<decltype(val)>>::for_each_field(val, func);                                             \
+                    } }()), ...); }, fields);                                                        \
         }                                                                                                                            \
     };
