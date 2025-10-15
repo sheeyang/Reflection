@@ -2,6 +2,7 @@
 
 #include <tuple>
 #include <type_traits>
+#include <iostream> // For std::cout
 
 // Count arguments (supports up to 20)
 #define COUNT_ARGS(...) COUNT_ARGS_IMPL(__VA_ARGS__, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
@@ -41,38 +42,56 @@ template <typename T>
 struct Reflex;
 
 template <typename T>
-constexpr bool is_reflectable = requires { Reflex<T>::fields; };
+constexpr bool is_reflectable_v = requires { Reflex<T>::fields; };
 
 #define FIELD_PAIR(CLASS, FIELD) std::make_pair(#FIELD, &CLASS::FIELD)
 
-#define REFLECT(CLASS_NAME, ...)                                                                                                     \
-    template <>                                                                                                                      \
-    struct Reflex<CLASS_NAME>                                                                                                        \
-    {                                                                                                                                \
-        static constexpr const char *class_name = #CLASS_NAME;                                                                       \
-        static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
-        static constexpr size_t field_count() { return std::tuple_size_v<decltype(fields)>; }                                        \
-        static void for_each_field(CLASS_NAME &obj, auto &&func, int nest_level = 0)                                                 \
-        {                                                                                                                            \
-            std::apply([&](auto &&...field) { (([&]() {                                                                                                           \
-                    auto &val = obj.*(field.second);                                                                                 \
-                    func(field.first, val, nest_level);                                                                                          \
-                    if constexpr (is_reflectable<std::decay_t<decltype(val)>>) {                                                    \
-                        Reflex<std::decay_t<decltype(val)>>::for_each_field(val, func, nest_level + 1);                           \
-                    } }()), ...); }, fields);                                                        \
-        }                                                                                                                            \
-        static void print(CLASS_NAME &obj)                                                                                           \
-        {                                                                                                                            \
-            std::cout << "Class: " << class_name << "\n";                                                                            \
-            for_each_field(obj, [](const std::string &name, auto &value, int nest_level) {                                             \
-                std::string indent(2 + nest_level * 2, ' ');                                                                            \
-                if constexpr (std::is_fundamental_v<std::decay_t<decltype(value)>>)                                                  \
-                {                                                                                                                    \
-                    std::cout << indent << name << " = " << value << "\n";                                                          \
-                }                                                                                                                    \
-                else                                                                                                               \
-                {                                                                                                                    \
-                    std::cout << indent << name << " (" << Reflex<std::decay_t<decltype(value)>>::class_name << "):\n";            \
-                } });                                       \
-        }                                                                                                                            \
+class Impl
+{
+    template <typename T>
+    friend struct Reflex; // Limit access to only Reflex
+
+    template <typename T>
+    static constexpr size_t field_count() { return std::tuple_size_v<decltype(Reflex<T>::fields)>; }
+
+    template <typename T>
+    static void for_each_field(T &obj, auto &&func, int nest_level = 0)
+    {
+
+        std::apply([&](auto &&...field)
+                   { (([&]()
+                       {
+            auto &val = obj.*(field.second);
+            func(field.first, val, nest_level);
+            if constexpr (is_reflectable_v<std::decay_t<decltype(val)>>) {
+                for_each_field(val, func, nest_level + 1);
+            } }()),
+                      ...); }, Reflex<T>::fields);
+    }
+
+    template <typename T>
+    static void print(T &obj)
+    {
+
+        std::cout << "Class: " << Reflex<T>::class_name << "\n";
+        for_each_field(obj, [](const std::string &name, auto &value, int nest_level)
+                       {
+            std::string indent(2 + nest_level * 2, ' ');
+            if constexpr (std::is_fundamental_v<std::decay_t<decltype(value)>>) {
+                std::cout << indent << name << " = " << value << "\n";
+            } else {
+                std::cout << indent << name << " (" << Reflex<std::decay_t<decltype(value)>>::class_name << "):\n";
+            } });
+    }
+};
+
+#define REFLECT(CLASS_NAME, ...)                                                                                                      \
+    template <>                                                                                                                       \
+    struct Reflex<CLASS_NAME>                                                                                                         \
+    {                                                                                                                                 \
+        static constexpr const char *class_name = #CLASS_NAME;                                                                        \
+        static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__));  \
+        static constexpr size_t field_count() { return Impl::field_count<CLASS_NAME>(); }                                             \
+        static void for_each_field(CLASS_NAME &obj, auto &&func, int nest_level = 0) { Impl::for_each_field(obj, func, nest_level); } \
+        static void print(CLASS_NAME &obj) { Impl::print(obj); }                                                                      \
     };
