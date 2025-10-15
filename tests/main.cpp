@@ -37,12 +37,12 @@ struct Nested
 };
 REFLECT(Nested, a, s, apt)
 
-// struct DeeplyNested
-// {
-//     Nested n;
-//     Simple s;
-// };
-// REFLECT(DeeplyNested, n, s)
+struct DeeplyNested
+{
+    Nested n;
+    Simple s;
+};
+REFLECT(DeeplyNested, n, s)
 
 // struct ComplexTypes
 // {
@@ -73,6 +73,9 @@ int main()
 
     Nested n{123, {1, 2.0f, 3.0}, {true, 'y', 456, 789, 101112L, 131415LL, 200, 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
     Reflex::print(n);
+
+    DeeplyNested dn{{456, {4, 5.0f, 6.0}, {false, 'z', 789, 101112, 131415L, 161718LL, 200, 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
+    Reflex::print(dn);
 
     // auto names = Reflex<Simple>::get_field_names();
     // for (const auto &name : names)
