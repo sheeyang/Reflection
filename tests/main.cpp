@@ -67,12 +67,12 @@ int main()
     // Reflex<Simple>::for_each_field(s, print_field);
     // std::cout << "\n";
 
-    Reflex<Simple>::print(s);
+    Reflex::print(s);
 
     // AllPrimitiveTypes apt{true, 'x', 123, 456, 789L, 101112LL, 200, 30000, 4000000, 50000000UL, 6000000000ULL, 1.23f, 4.56, 7.89L};
 
     Nested n{123, {1, 2.0f, 3.0}, {true, 'y', 456, 789, 101112L, 131415LL, 200, 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
-    Reflex<Nested>::print(n);
+    Reflex::print(n);
 
     // auto names = Reflex<Simple>::get_field_names();
     // for (const auto &name : names)
