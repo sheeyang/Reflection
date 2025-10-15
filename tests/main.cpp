@@ -62,7 +62,7 @@ struct ComplexTypes
     std::list<double> lst;
     std::tuple<int, float, std::string> tpl;
 };
-REFLECT(ComplexTypes, cstr, str, vec, mp, ump, lst, arr, tpl)
+REFLECT(ComplexTypes, cstr, str, arr, vec, mp, ump, lst, tpl)
 
 int main()
 {
@@ -87,12 +87,12 @@ int main()
     ComplexTypes ct{
         "Hello, World!",
         "Reflect in C++",
-        {1, 2, 3, 4, 5},
-        {{"one", 1.0f}, {"two", 2.0f}},
-        {{1, "one"}, {2, "two"}},
-        {3.14, 2.71, 1.61},
-        {9.81, 3.67, 1.41},
-        {42, 3.14f, "tuple"}};
+        {1.1, 2.2, 3.3},
+        {10, 20, 30, 40, 50},
+        {{"pi", 3.14f}, {"e", 2.71f}},
+        {{1, "one"}, {2, "two"}, {3, "three"}},
+        {0.1, 0.2, 0.3, 0.4, 0.5},
+        {100, 200.0f, "three hundred"}};
     Reflex::print(ct);
 
     // auto names = Reflex<Simple>::get_field_names();
