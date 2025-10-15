@@ -114,6 +114,9 @@ int main()
         {100, 200.0f, "three hundred"}};
     Reflex::print(ct);
 
+    Reflex::set_field_value(ct, "str", "Bye, World.");
+    Reflex::print(ct);
+
     // NestedComplex nc{
     //     {{"one", "two"}, {"three", "four", "five"}, {"six"}},
     //     {{{1, 2, 3}, {4, 5, 6}}},

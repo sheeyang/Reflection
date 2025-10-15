@@ -2,8 +2,9 @@
 
 #include <tuple>
 #include <type_traits>
-#include <iostream> // For std::cout
-#include <string>   // For std::string and std::to_string
+#include <iostream>    // For std::cout
+#include <string>      // For std::string and std::to_string
+#include <string_view> // For std::string_view
 
 // Count arguments (supports up to 20)
 #define COUNT_ARGS(...) COUNT_ARGS_IMPL(__VA_ARGS__, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
@@ -81,6 +82,20 @@ namespace Reflex
                       ...); }, ReflectionInfo<T>::fields);
     }
 
+    template <typename T, typename U>
+    static void set_field_value(T &obj, const std::string &field_name, U &&value)
+    {
+        std::apply([&](auto &&...fields)
+                   { (([&]()
+                       {
+            if (std::string_view(fields.first) == field_name) {
+                using FieldType = std::decay_t<decltype(obj.*(fields.second))>;
+                if constexpr (std::is_assignable_v<FieldType &, decltype(value)>) {
+                    obj.*(fields.second) = std::forward<U>(value);
+                }
+            } }()),
+                      ...); }, ReflectionInfo<T>::fields);
+    }
     // Helper function to print any value recursively
     template <typename T>
     static void print_value(const std::string &indent, const std::string &name, T &value, int nest_level)
