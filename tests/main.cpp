@@ -60,13 +60,17 @@ int main()
 {
     Simple s{42, 3.14f, 2.718};
 
-    // Reflex<Simple> info;
-    // std::cout << info.class_name << "\n";
-
     std::cout << Reflex<Simple>::class_name << "\n";
     std::cout << "Field count: " << Reflex<Simple>::field_count() << "\n";
     Reflex<Simple>::for_each_field(s, [](const char *name, auto &value)
                                    { std::cout << name << " = " << value << "\n"; });
+
+    AllPrimitiveTypes apt{true, 'x', 123, 456, 789L, 101112LL, 200, 30000, 4000000, 50000000UL, 6000000000ULL, 1.23f, 4.56, 7.89L};
+    std::cout << "\n"
+              << Reflex<AllPrimitiveTypes>::class_name << "\n";
+    std::cout << "Field count: " << Reflex<AllPrimitiveTypes>::field_count() << "\n";
+    Reflex<AllPrimitiveTypes>::for_each_field(apt, [](const char *name, auto &value)
+                                              { std::cout << name << " = " << value << "\n"; });
 
     // Reflex<Simple>::for_each_field(s, [](const std::string &name, auto &value)
     //                                 { std::cout << name << " = " << value << "\n"; });
