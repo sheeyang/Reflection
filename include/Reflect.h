@@ -3,6 +3,7 @@
 #include <tuple>
 #include <type_traits>
 #include <iostream> // For std::cout
+#include <string>   // For std::string and std::to_string
 
 // Count arguments (supports up to 20)
 #define COUNT_ARGS(...) COUNT_ARGS_IMPL(__VA_ARGS__, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
@@ -73,6 +74,66 @@ namespace Reflex
                       ...); }, ReflectionInfo<T>::fields);
     }
 
+    // Helper function to print any value recursively
+    template <typename T>
+    static void print_value(const std::string &indent, const std::string &name, T &value, int nest_level)
+    {
+        using ValueType = std::decay_t<T>;
+        if constexpr (std::is_same_v<ValueType, bool>)
+        {
+            std::cout << indent << name << " = " << (value ? "true" : "false") << "\n";
+        }
+        else if constexpr (std::is_same_v<ValueType, char>)
+        {
+            std::cout << indent << name << " = '" << value << "'\n";
+        }
+        else if constexpr (std::is_arithmetic_v<ValueType>)
+        {
+            // Other arithmetic types (int, float, etc.)
+            std::cout << indent << name << " = " << value << "\n";
+        }
+        else if constexpr (std::is_same_v<ValueType, std::string>)
+        {
+            std::cout << indent << name << " = \"" << value << "\"\n";
+        }
+        else if constexpr (std::is_same_v<ValueType, const char *>)
+        {
+            std::cout << indent << name << " = \"" << (value ? value : "null") << "\"\n";
+        }
+        else if constexpr (is_tuple_v<ValueType>)
+        {
+            std::cout << indent << name << " = (\n";
+            std::apply([&](auto &...args)
+                       {
+                int i = 0;
+                ((print_value(indent + "  ", std::to_string(i++), args, nest_level + 1)), ...); }, value);
+            std::cout << indent << ")\n";
+        }
+        else if constexpr (requires { value.size(); value.begin(); value.end(); })
+        {
+            // Iterable containers (arrays, vectors, lists, maps, etc.)
+            std::cout << indent << name << " = [\n";
+            int i = 0;
+            for (auto &elem : value)
+            {
+                print_value(indent + "  ", std::to_string(i++), elem, nest_level + 1);
+            }
+            std::cout << indent << "]\n";
+        }
+        else if constexpr (is_reflectable_v<ValueType>)
+        {
+            // Nested reflectable type
+            std::cout << indent << name << " (" << ReflectionInfo<ValueType>::class_name << "):\n";
+            for_each_field(value, [&](const std::string &sub_name, auto &sub_value, int)
+                           { print_value(indent + "  ", sub_name, sub_value, nest_level + 1); }, nest_level + 1);
+        }
+        else
+        {
+            // Fallback for other non-reflectable types
+            std::cout << indent << name << " = [non-reflectable type]\n";
+        }
+    }
+
     template <typename T>
     static void print(T &obj)
     {
@@ -80,61 +141,7 @@ namespace Reflex
         for_each_field(obj, [](const std::string &name, auto &value, int nest_level)
                        {
             std::string indent(2 + nest_level * 2, ' ');
-            using ValueType = std::decay_t<decltype(value)>;
-            if constexpr (std::is_same_v<ValueType, bool>)
-            {
-                std::cout << indent << name << " = " << (value ? "true" : "false") << "\n";
-            }
-            else if constexpr (std::is_same_v<ValueType, char>)
-            {
-                std::cout << indent << name << " = '" << value << "'\n";
-            }
-            else if constexpr (std::is_arithmetic_v<ValueType>)
-            {
-                // Other arithmetic types (int, float, etc.)
-                std::cout << indent << name << " = " << value << "\n";
-            }
-            else if constexpr (std::is_same_v<ValueType, std::string>)
-            {
-                std::cout << indent << name << " = \"" << value << "\"\n";
-            }
-            else if constexpr (std::is_same_v<ValueType, const char*>)
-            {
-                std::cout << indent << name << " = \"" << (value ? value : "null") << "\"\n";
-            }
-            else if constexpr (is_tuple_v<ValueType>)
-            {
-                std::cout << indent << name << " = (";
-                std::apply([&](const auto&... args)
-                           {
-                    bool first = true;
-                    ((std::cout << (first ? "" : ", ") << args, first = false), ...);
-                }, value);
-                std::cout << ")\n";
-            }
-            else if constexpr (requires { value.size(); value.begin(); value.end(); })
-            {
-                // Iterable containers (arrays, vectors, lists, maps, etc.)
-                std::cout << indent << name << " = [";
-                bool first = true;
-                for (const auto& elem : value)
-                {
-                    if (!first) std::cout << ", ";
-                    std::cout << elem;
-                    first = false;
-                }
-                std::cout << "]\n";
-            }
-            else if constexpr (is_reflectable_v<ValueType>)
-            {
-                // Nested reflectable type
-                std::cout << indent << name << " (" << ReflectionInfo<ValueType>::class_name << "):\n";
-            }
-            else
-            {
-                // Fallback for other non-reflectable types
-                std::cout << indent << name << " = [non-reflectable type]\n";
-            } });
+            print_value(indent, name, value, nest_level); }, 0);
     }
 } // namespace Reflex
 
