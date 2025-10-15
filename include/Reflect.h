@@ -1,5 +1,6 @@
+#pragma once
 
-#define FIELD_PAIR(CLASS, FIELD) std::make_pair(#FIELD, &CLASS::FIELD)
+#include <tuple>
 
 // Count arguments (supports up to 20)
 #define COUNT_ARGS(...) COUNT_ARGS_IMPL(__VA_ARGS__, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
@@ -34,10 +35,16 @@
 #define MACROS_EXPAND_20(C, M, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20) MACROS_EXPAND_19(C, M, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19), M(C, F20)
 // Add more as needed...
 
-#define REFLECT(CLASS_NAME, ...)                                                                                                 \
-    template <>                                                                                                                  \
-    struct reflection_info<CLASS_NAME>                                                                                           \
-    {                                                                                                                            \
-        static constexpr const char *class_name = #CLASS_NAME;                                                                   \
-        static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELDS, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
+// Forward declare the template
+template <typename T>
+struct ReflectionInfo;
+
+#define FIELD_PAIR(CLASS, FIELD) std::make_pair(#FIELD, &CLASS::FIELD)
+
+#define REFLECT(CLASS_NAME, ...)                                                                                                     \
+    template <>                                                                                                                      \
+    struct ReflectionInfo<CLASS_NAME>                                                                                                \
+    {                                                                                                                                \
+        static constexpr const char *class_name = #CLASS_NAME;                                                                       \
+        static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
     };

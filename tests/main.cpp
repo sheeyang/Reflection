@@ -1,5 +1,7 @@
 #include "../include/Reflect.h"
 
+#include <iostream>
+
 struct Simple
 {
     int a;
@@ -58,23 +60,29 @@ int main()
 {
     Simple s{42, 3.14f, 2.718};
 
-    Reflect<Simple>::for_each_field(s, [](const std::string &name, auto &value)
-                                    { std::cout << name << " = " << value << "\n"; });
+    ReflectionInfo<Simple> info;
+    std::cout << info.class_name << "\n";
+    std::apply([&](auto &&...field)
+               { ((std::cout << field.first << " = " << s.*(field.second) << "\n"), ...); },
+               info.fields);
 
-    auto names = Reflect<Simple>::get_field_names();
-    for (const auto &name : names)
-    {
-        std::cout << "Field name: " << name << "\n";
-    }
+    // Reflect<Simple>::for_each_field(s, [](const std::string &name, auto &value)
+    //                                 { std::cout << name << " = " << value << "\n"; });
 
-    size_t count = Reflect<Simple>::field_count();
-    std::cout << "Field count: " << count << "\n";
+    // auto names = Reflect<Simple>::get_field_names();
+    // for (const auto &name : names)
+    // {
+    //     std::cout << "Field name: " << name << "\n";
+    // }
 
-    auto value = get_field_by_name(s, "a");
-    if (value)
-        std::cout << "Field 'a' value: " << *value << "\n";
-    else
-        std::cout << "Field 'a' not found\n";
+    // size_t count = Reflect<Simple>::field_count();
+    // std::cout << "Field count: " << count << "\n";
+
+    // auto value = get_field_by_name(s, "a");
+    // if (value)
+    //     std::cout << "Field 'a' value: " << *value << "\n";
+    // else
+    //     std::cout << "Field 'a' not found\n";
 
     return 0;
 }
