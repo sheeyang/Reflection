@@ -101,3 +101,33 @@ TEST_CASE("DeeplyNested struct reflection", "[reflection]")
         REQUIRE(count == 25);
     }
 }
+
+TEST_CASE("ComplexTypes struct reflection", "[reflection]")
+{
+    ComplexTypes obj{
+        "Hello, World!",
+        "Reflect in C++",
+        {1.1, 2.2, 3.3},
+        {10, 20, 30, 40, 50},
+        {"pi", 3.14f},
+        {{"pi", 3.14f}, {"e", 2.71f}},
+        {{1, "one"}, {2, "two"}, {3, "three"}},
+        {0.1, 0.2, 0.3, 0.4, 0.5},
+        {100, 200.0f, "three hundred"}};
+
+    SECTION("Class name")
+    {
+        REQUIRE(Reflex::get_class_name(obj) == "ComplexTypes");
+    }
+
+    SECTION("Field count")
+    {
+        REQUIRE(Reflex::get_field_count(obj) == 9);
+    }
+
+    SECTION("Set field value")
+    {
+        Reflex::set_field_value(obj, "stringValue", std::string("Goodbye, World."));
+        REQUIRE(obj.stringValue == "Goodbye, World.");
+    }
+}
