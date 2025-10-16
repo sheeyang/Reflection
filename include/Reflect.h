@@ -132,8 +132,9 @@ namespace Reflex
 
     // Helper function to print any value recursively
     template <typename T>
-    static void print_value(const std::string &indent, std::string_view name, T &value, int nest_level)
+    static void print_value(std::string_view name, T &value, int nest_level)
     {
+        std::string indent(2 + nest_level * 2, ' ');
         using ValueType = std::decay_t<T>;
         if constexpr (std::is_same_v<ValueType, bool>)
         {
@@ -159,8 +160,8 @@ namespace Reflex
         else if constexpr (is_pair<ValueType>)
         {
             std::cout << indent << name << " = {\n";
-            print_value(indent + "  ", "first", value.first, nest_level + 1);
-            print_value(indent + "  ", "second", value.second, nest_level + 1);
+            print_value("first", value.first, nest_level + 1);
+            print_value("second", value.second, nest_level + 1);
             std::cout << indent << "}\n";
         }
         else if constexpr (is_tuple<ValueType>)
@@ -169,7 +170,7 @@ namespace Reflex
             std::apply([&](auto &...args)
                        {
                 int i = 0;
-                ((print_value(indent + "  ", std::to_string(i++), args, nest_level + 1)), ...); }, value);
+                ((print_value(std::to_string(i++), args, nest_level + 1)), ...); }, value);
             std::cout << indent << ")\n";
         }
         else if constexpr (is_iterable_v<ValueType>)
@@ -179,7 +180,7 @@ namespace Reflex
             int i = 0;
             for (auto &elem : value)
             {
-                print_value(indent + "  ", std::to_string(i++), elem, nest_level + 1);
+                print_value(std::to_string(i++), elem, nest_level + 1);
             }
             std::cout << indent << "]\n";
         }
@@ -188,7 +189,7 @@ namespace Reflex
             // Nested reflectable type - print header and recurse into fields
             std::cout << indent << name << " (" << ReflectionInfo<ValueType>::class_name << "):\n";
             for_each_field(value, [&](std::string_view sub_name, auto &sub_value, int)
-                           { print_value(indent + "  ", sub_name, sub_value, nest_level + 1); }, nest_level + 1);
+                           { print_value(sub_name, sub_value, nest_level + 1); }, nest_level + 1);
         }
         else
         {
@@ -202,9 +203,7 @@ namespace Reflex
     {
         std::cout << "Type: " << ReflectionInfo<T>::class_name << "\n";
         for_each_field(obj, [](std::string_view name, auto &value, int nest_level)
-                       {
-            std::string indent(2 + nest_level * 2, ' ');
-            print_value(indent, name, value, nest_level); }, 0);
+                       { print_value(name, value, nest_level); }, 0);
     }
 } // namespace Reflex
 
