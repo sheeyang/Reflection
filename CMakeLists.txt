@@ -53,3 +53,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+
+include(CTest)
+include(Catch)
+catch_discover_tests(${PROJECT_NAME})
