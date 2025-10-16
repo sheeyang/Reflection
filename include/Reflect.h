@@ -69,6 +69,9 @@ namespace Reflex
     static constexpr size_t field_count() { return std::tuple_size_v<decltype(ReflectionInfo<T>::fields)>; }
 
     template <typename T>
+    static constexpr size_t field_count(const T &) { return field_count<T>(); }
+
+    template <typename T>
     static void for_each_field(T &obj, auto &&func, int nest_level = 0)
     {
         if constexpr (has_reflector_v<T>)

@@ -11,4 +11,5 @@ TEST_CASE("Simple struct information", "[Reflect]")
 
     REQUIRE(ReflectionInfo<Simple>::class_name == std::string("Simple"));
     REQUIRE(Reflex::field_count<Simple>() == 3);
+    REQUIRE(Reflex::field_count(s) == 3);
 }
