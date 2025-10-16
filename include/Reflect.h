@@ -102,10 +102,7 @@ namespace Reflex
                        { (([&]()
                            {
                         auto &val = reflector.*(field.second);
-                        func(field.first, val, nest_level);
-                        if constexpr (is_reflectable_v<std::decay_t<decltype(val)>>) {
-                            for_each_field(val, func, nest_level + 1);
-                        } }()),
+                        func(field.first, val, nest_level); }()),
                           ...); }, ReflectionInfo<T>::fields);
             obj = ReflectionInfo<T>::create(reflector);
         }
@@ -115,10 +112,7 @@ namespace Reflex
                        { (([&]()
                            {
                         auto &val = obj.*(field.second);
-                        func(field.first, val, nest_level);
-                        if constexpr (is_reflectable_v<std::decay_t<decltype(val)>>) {
-                            for_each_field(val, func, nest_level + 1);
-                        } }()),
+                        func(field.first, val, nest_level); }()),
                           ...); }, ReflectionInfo<T>::fields);
         }
     }
@@ -164,7 +158,7 @@ namespace Reflex
         {
             std::cout << indent << name << " = " << (value ? "true" : "false") << "\n";
         }
-        else if constexpr (std::is_same_v<ValueType, char>)
+        else if constexpr (std::is_same_v<ValueType, char> || std::is_same_v<ValueType, unsigned char>)
         {
             std::cout << indent << name << " = '" << value << "'\n";
         }

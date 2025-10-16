@@ -78,7 +78,7 @@ TEST_CASE("Print AllPrimitiveTypes struct", "[print]")
 
 TEST_CASE("Print Nested struct", "[print]")
 {
-    Nested obj{123, {1, 2.0f, 3.0}, {true, 'C', 456, 789, 101112L, 131415LL, 200, 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
+    Nested obj{123, {1, 2.0f, 3.0}, {true, 'C', 456, 789, 101112L, 131415LL, 'D', 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
 
     CaptureStdout capture;
     Reflex::print(obj);
@@ -97,7 +97,7 @@ TEST_CASE("Print Nested struct", "[print]")
     integerValue = 789
     longValue = 101112
     longLongValue = 131415
-    unsignedCharValue = 'È'
+    unsignedCharValue = 'D'
     unsignedShortValue = 40000
     unsignedIntValue = 5000000
     unsignedLongValue = 60000000
@@ -112,7 +112,7 @@ TEST_CASE("Print Nested struct", "[print]")
 
 TEST_CASE("Print DeeplyNested struct", "[print]")
 {
-    DeeplyNested obj{{456, {4, 5.0f, 6.0}, {false, 'D', 789, 101112, 131415L, 161718LL, 200, 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
+    DeeplyNested obj{{456, {4, 5.0f, 6.0}, {false, 'D', 789, 101112, 131415L, 161718LL, 'E', 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
 
     CaptureStdout capture;
     Reflex::print(obj);
@@ -132,7 +132,7 @@ TEST_CASE("Print DeeplyNested struct", "[print]")
       integerValue = 101112
       longValue = 131415
       longLongValue = 161718
-      unsignedCharValue = 'È'
+      unsignedCharValue = 'E'
       unsignedShortValue = 50000
       unsignedIntValue = 6000000
       unsignedLongValue = 70000000

@@ -102,7 +102,7 @@ TEST_CASE("AllPrimitiveTypes struct reflection", "[reflection]")
 
 TEST_CASE("Nested struct reflection", "[reflection]")
 {
-    Nested obj{123, {1, 2.0f, 3.0}, {true, 'C', 456, 789, 101112L, 131415LL, 200, 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
+    Nested obj{123, {1, 2.0f, 3.0}, {true, 'C', 456, 789, 101112L, 131415LL, 'D', 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
 
     SECTION("Class name")
     {
@@ -147,7 +147,7 @@ TEST_CASE("Nested struct reflection", "[reflection]")
         REQUIRE(obj.primitiveTypes.integerValue == 789);
         REQUIRE(obj.primitiveTypes.longValue == 101112L);
         REQUIRE(obj.primitiveTypes.longLongValue == 131415LL);
-        REQUIRE(obj.primitiveTypes.unsignedCharValue == 200);
+        REQUIRE(obj.primitiveTypes.unsignedCharValue == 'D');
         REQUIRE(obj.primitiveTypes.unsignedShortValue == 40000);
         REQUIRE(obj.primitiveTypes.unsignedIntValue == 5000000);
         REQUIRE(obj.primitiveTypes.unsignedLongValue == 60000000UL);
@@ -160,7 +160,7 @@ TEST_CASE("Nested struct reflection", "[reflection]")
 
 TEST_CASE("DeeplyNested struct reflection", "[reflection]")
 {
-    DeeplyNested obj{{456, {4, 5.0f, 6.0}, {false, 'D', 789, 101112, 131415L, 161718LL, 200, 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
+    DeeplyNested obj{{456, {4, 5.0f, 6.0}, {false, 'D', 789, 101112, 131415L, 161718LL, 'E', 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
 
     SECTION("Class name")
     {
@@ -207,7 +207,7 @@ TEST_CASE("DeeplyNested struct reflection", "[reflection]")
         REQUIRE(obj.nestedStruct.primitiveTypes.integerValue == 101112);
         REQUIRE(obj.nestedStruct.primitiveTypes.longValue == 131415L);
         REQUIRE(obj.nestedStruct.primitiveTypes.longLongValue == 161718LL);
-        REQUIRE(obj.nestedStruct.primitiveTypes.unsignedCharValue == 200);
+        REQUIRE(obj.nestedStruct.primitiveTypes.unsignedCharValue == 'E');
         REQUIRE(obj.nestedStruct.primitiveTypes.unsignedShortValue == 50000);
         REQUIRE(obj.nestedStruct.primitiveTypes.unsignedIntValue == 6000000);
         REQUIRE(obj.nestedStruct.primitiveTypes.unsignedLongValue == 70000000UL);
