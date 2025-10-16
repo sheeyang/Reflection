@@ -33,6 +33,15 @@ TEST_CASE("Simple struct reflection", "[reflection]")
         REQUIRE(obj.floatValue == 3.14f);
         REQUIRE(obj.doubleValue == 2.71);
     }
+
+    SECTION("Field iteration")
+    {
+        std::vector<std::string> names;
+        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
+                               { names.push_back(std::string(name)); });
+        REQUIRE(names.size() == 3);
+        REQUIRE(names == std::vector<std::string>{"integerValue", "floatValue", "doubleValue"});
+    }
 }
 
 TEST_CASE("AllPrimitiveTypes struct reflection", "[reflection]")
@@ -54,10 +63,14 @@ TEST_CASE("AllPrimitiveTypes struct reflection", "[reflection]")
 
     SECTION("Field iteration")
     {
-        int count = 0;
+        std::vector<std::string> names;
         Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
-                               { count++; });
-        REQUIRE(count == 14);
+                               { names.push_back(std::string(name)); });
+        REQUIRE(names.size() == 14);
+        REQUIRE(names == std::vector<std::string>{
+                             "booleanValue", "characterValue", "shortValue", "integerValue", "longValue", "longLongValue",
+                             "unsignedCharValue", "unsignedShortValue", "unsignedIntValue", "unsignedLongValue", "unsignedLongLongValue",
+                             "floatValue", "doubleValue", "longDoubleValue"});
     }
 
     SECTION("Field values")
@@ -95,11 +108,16 @@ TEST_CASE("Nested struct reflection", "[reflection]")
 
     SECTION("Field iteration")
     {
-        int count = 0;
+        std::vector<std::string> names;
         Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
-                               { count++; });
-        // Total fields: 3 (Nested) + 3 (Simple) + 14 (AllPrimitiveTypes) = 20
-        REQUIRE(count == 20);
+                               { names.push_back(std::string(name)); });
+        REQUIRE(names.size() == 20);
+        REQUIRE(names == std::vector<std::string>{
+                             "count",
+                             "integerValue", "floatValue", "doubleValue",
+                             "booleanValue", "characterValue", "shortValue", "integerValue", "longValue", "longLongValue",
+                             "unsignedCharValue", "unsignedShortValue", "unsignedIntValue", "unsignedLongValue", "unsignedLongLongValue",
+                             "floatValue", "doubleValue", "longDoubleValue"});
     }
 
     SECTION("Field values")
@@ -141,11 +159,17 @@ TEST_CASE("DeeplyNested struct reflection", "[reflection]")
 
     SECTION("Field iteration")
     {
-        int count = 0;
+        std::vector<std::string> names;
         Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
-                               { count++; });
-        // Total fields: 2 (DeeplyNested) + 3 (Nested) + 3 (Simple) + 14 (AllPrimitiveTypes) + 3 (Simple) = 25
-        REQUIRE(count == 25);
+                               { names.push_back(std::string(name)); });
+        REQUIRE(names.size() == 25);
+        REQUIRE(names == std::vector<std::string>{
+                             "count",
+                             "integerValue", "floatValue", "doubleValue",
+                             "booleanValue", "characterValue", "shortValue", "integerValue", "longValue", "longLongValue",
+                             "unsignedCharValue", "unsignedShortValue", "unsignedIntValue", "unsignedLongValue", "unsignedLongLongValue",
+                             "floatValue", "doubleValue", "longDoubleValue",
+                             "integerValue", "floatValue", "doubleValue"});
     }
 
     SECTION("Field values")
@@ -214,5 +238,16 @@ TEST_CASE("ComplexTypes struct reflection", "[reflection]")
         REQUIRE(obj.intStringUnorderedMap == std::unordered_map<int, std::string>{{1, "one"}, {2, "two"}, {3, "three"}});
         REQUIRE(obj.doubleList == std::list<double>{0.1, 0.2, 0.3, 0.4, 0.5});
         REQUIRE(obj.intFloatStringTuple == std::tuple<int, float, std::string>{100, 200.0f, "three hundred"});
+    }
+
+    SECTION("Field iteration")
+    {
+        std::vector<std::string> names;
+        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
+                               { names.push_back(std::string(name)); });
+        REQUIRE(names.size() == 9);
+        REQUIRE(names == std::vector<std::string>{
+                             "cString", "stringValue", "doubleArray", "intVector", "stringFloatPair",
+                             "stringFloatMap", "intStringUnorderedMap", "doubleList", "intFloatStringTuple"});
     }
 }
