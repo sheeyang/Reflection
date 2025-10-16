@@ -37,10 +37,14 @@ TEST_CASE("Simple struct reflection", "[reflection]")
     SECTION("Field iteration")
     {
         std::vector<std::string> names;
-        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
-                               { names.push_back(std::string(name)); });
+        std::vector<int> nest_levels;
+        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
+                               {
+                                   names.push_back(std::string(name));
+                                   nest_levels.push_back(nest_level); });
         REQUIRE(names.size() == 3);
         REQUIRE(names == std::vector<std::string>{"integerValue", "floatValue", "doubleValue"});
+        REQUIRE(nest_levels == std::vector<int>{0, 0, 0}); // All top-level fields
     }
 }
 
@@ -64,13 +68,17 @@ TEST_CASE("AllPrimitiveTypes struct reflection", "[reflection]")
     SECTION("Field iteration")
     {
         std::vector<std::string> names;
-        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
-                               { names.push_back(std::string(name)); });
+        std::vector<int> nest_levels;
+        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
+                               { 
+                                   names.push_back(std::string(name)); 
+                                   nest_levels.push_back(nest_level); });
         REQUIRE(names.size() == 14);
         REQUIRE(names == std::vector<std::string>{
                              "booleanValue", "characterValue", "shortValue", "integerValue", "longValue", "longLongValue",
                              "unsignedCharValue", "unsignedShortValue", "unsignedIntValue", "unsignedLongValue", "unsignedLongLongValue",
                              "floatValue", "doubleValue", "longDoubleValue"});
+        REQUIRE(nest_levels == std::vector<int>(14, 0)); // All top-level
     }
 
     SECTION("Field values")
@@ -110,8 +118,12 @@ TEST_CASE("Nested struct reflection", "[reflection]")
     {
         int i = 0;
         std::vector<std::string> names;
-        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
-                               { names.push_back(std::string(name)); i++; });
+        std::vector<int> nest_levels;
+        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
+                               { 
+                                   names.push_back(std::string(name)); 
+                                   nest_levels.push_back(nest_level);
+                                   i++; });
         REQUIRE(i == 20);
         REQUIRE(names.size() == 20);
         REQUIRE(names == std::vector<std::string>{"count", "simpleStruct", "integerValue", "floatValue", "doubleValue",
@@ -119,6 +131,8 @@ TEST_CASE("Nested struct reflection", "[reflection]")
                                                   "integerValue", "longValue", "longLongValue", "unsignedCharValue",
                                                   "unsignedShortValue", "unsignedIntValue", "unsignedLongValue",
                                                   "unsignedLongLongValue", "floatValue", "doubleValue", "longDoubleValue"});
+        // Nest levels: count(0), simpleStruct(0), then its fields(1), primitiveTypes(0), then its fields(1)
+        REQUIRE(nest_levels == std::vector<int>{0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
     }
 
     SECTION("Field values")
@@ -162,8 +176,12 @@ TEST_CASE("DeeplyNested struct reflection", "[reflection]")
     {
         int i = 0;
         std::vector<std::string> names;
-        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
-                               { names.push_back(std::string(name)); i++; });
+        std::vector<int> nest_levels;
+        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
+                               { 
+                                   names.push_back(std::string(name)); 
+                                   nest_levels.push_back(nest_level);
+                                   i++; });
         REQUIRE(i == 25);
         REQUIRE(names.size() == 25);
         REQUIRE(names == std::vector<std::string>{"nestedStruct", "count", "simpleStruct", "integerValue", "floatValue",
@@ -173,6 +191,8 @@ TEST_CASE("DeeplyNested struct reflection", "[reflection]")
                                                   "unsignedLongValue", "unsignedLongLongValue", "floatValue", "doubleValue",
                                                   "longDoubleValue", "simpleStruct", "integerValue", "floatValue",
                                                   "doubleValue"});
+        // Nest levels: nestedStruct(0), count(1), simpleStruct(1), its fields(2), primitiveTypes(1), its fields(2), simpleStruct(0), its fields(1)
+        REQUIRE(nest_levels == std::vector<int>{0, 1, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 1});
     }
 
     SECTION("Field values")
@@ -246,11 +266,15 @@ TEST_CASE("ComplexTypes struct reflection", "[reflection]")
     SECTION("Field iteration")
     {
         std::vector<std::string> names;
-        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
-                               { names.push_back(std::string(name)); });
+        std::vector<int> nest_levels;
+        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
+                               { 
+                                   names.push_back(std::string(name)); 
+                                   nest_levels.push_back(nest_level); });
         REQUIRE(names.size() == 9);
         REQUIRE(names == std::vector<std::string>{
                              "cString", "stringValue", "doubleArray", "intVector", "stringFloatPair",
                              "stringFloatMap", "intStringUnorderedMap", "doubleList", "intFloatStringTuple"});
+        REQUIRE(nest_levels == std::vector<int>(9, 0)); // All top-level, no recursion into containers
     }
 }
