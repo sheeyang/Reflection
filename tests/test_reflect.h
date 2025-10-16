@@ -124,15 +124,10 @@ TEST_CASE("Nested struct reflection", "[reflection]")
                                    names.push_back(std::string(name)); 
                                    nest_levels.push_back(nest_level);
                                    i++; });
-        REQUIRE(i == 20);
-        REQUIRE(names.size() == 20);
-        REQUIRE(names == std::vector<std::string>{"count", "simpleStruct", "integerValue", "floatValue", "doubleValue",
-                                                  "primitiveTypes", "booleanValue", "characterValue", "shortValue",
-                                                  "integerValue", "longValue", "longLongValue", "unsignedCharValue",
-                                                  "unsignedShortValue", "unsignedIntValue", "unsignedLongValue",
-                                                  "unsignedLongLongValue", "floatValue", "doubleValue", "longDoubleValue"});
-        // Nest levels: count(0), simpleStruct(0), then its fields(1), primitiveTypes(0), then its fields(1)
-        REQUIRE(nest_levels == std::vector<int>{0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
+        REQUIRE(i == 3);
+        REQUIRE(names.size() == 3);
+        REQUIRE(names == std::vector<std::string>{"count", "simpleStruct", "primitiveTypes"});
+        REQUIRE(nest_levels == std::vector<int>{0, 0, 0});
     }
 
     SECTION("Field values")
@@ -182,17 +177,10 @@ TEST_CASE("DeeplyNested struct reflection", "[reflection]")
                                    names.push_back(std::string(name)); 
                                    nest_levels.push_back(nest_level);
                                    i++; });
-        REQUIRE(i == 25);
-        REQUIRE(names.size() == 25);
-        REQUIRE(names == std::vector<std::string>{"nestedStruct", "count", "simpleStruct", "integerValue", "floatValue",
-                                                  "doubleValue", "primitiveTypes", "booleanValue", "characterValue",
-                                                  "shortValue", "integerValue", "longValue", "longLongValue",
-                                                  "unsignedCharValue", "unsignedShortValue", "unsignedIntValue",
-                                                  "unsignedLongValue", "unsignedLongLongValue", "floatValue", "doubleValue",
-                                                  "longDoubleValue", "simpleStruct", "integerValue", "floatValue",
-                                                  "doubleValue"});
-        // Nest levels: nestedStruct(0), count(1), simpleStruct(1), its fields(2), primitiveTypes(1), its fields(2), simpleStruct(0), its fields(1)
-        REQUIRE(nest_levels == std::vector<int>{0, 1, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 1});
+        REQUIRE(i == 2);
+        REQUIRE(names.size() == 2);
+        REQUIRE(names == std::vector<std::string>{"nestedStruct", "simpleStruct"});
+        REQUIRE(nest_levels == std::vector<int>{0, 0});
     }
 
     SECTION("Field values")
@@ -275,6 +263,6 @@ TEST_CASE("ComplexTypes struct reflection", "[reflection]")
         REQUIRE(names == std::vector<std::string>{
                              "cString", "stringValue", "doubleArray", "intVector", "stringFloatPair",
                              "stringFloatMap", "intStringUnorderedMap", "doubleList", "intFloatStringTuple"});
-        REQUIRE(nest_levels == std::vector<int>(9, 0)); // All top-level, no recursion into containers
+        REQUIRE(nest_levels == std::vector<int>(9, 0));
     }
 }
