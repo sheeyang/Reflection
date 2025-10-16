@@ -108,16 +108,17 @@ TEST_CASE("Nested struct reflection", "[reflection]")
 
     SECTION("Field iteration")
     {
+        int i = 0;
         std::vector<std::string> names;
         Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
-                               { names.push_back(std::string(name)); });
+                               { names.push_back(std::string(name)); i++; });
+        REQUIRE(i == 20);
         REQUIRE(names.size() == 20);
-        REQUIRE(names == std::vector<std::string>{
-                             "count",
-                             "integerValue", "floatValue", "doubleValue",
-                             "booleanValue", "characterValue", "shortValue", "integerValue", "longValue", "longLongValue",
-                             "unsignedCharValue", "unsignedShortValue", "unsignedIntValue", "unsignedLongValue", "unsignedLongLongValue",
-                             "floatValue", "doubleValue", "longDoubleValue"});
+        REQUIRE(names == std::vector<std::string>{"count", "simpleStruct", "integerValue", "floatValue", "doubleValue",
+                                                  "primitiveTypes", "booleanValue", "characterValue", "shortValue",
+                                                  "integerValue", "longValue", "longLongValue", "unsignedCharValue",
+                                                  "unsignedShortValue", "unsignedIntValue", "unsignedLongValue",
+                                                  "unsignedLongLongValue", "floatValue", "doubleValue", "longDoubleValue"});
     }
 
     SECTION("Field values")
@@ -159,17 +160,19 @@ TEST_CASE("DeeplyNested struct reflection", "[reflection]")
 
     SECTION("Field iteration")
     {
+        int i = 0;
         std::vector<std::string> names;
         Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
-                               { names.push_back(std::string(name)); });
+                               { names.push_back(std::string(name)); i++; });
+        REQUIRE(i == 25);
         REQUIRE(names.size() == 25);
-        REQUIRE(names == std::vector<std::string>{
-                             "count",
-                             "integerValue", "floatValue", "doubleValue",
-                             "booleanValue", "characterValue", "shortValue", "integerValue", "longValue", "longLongValue",
-                             "unsignedCharValue", "unsignedShortValue", "unsignedIntValue", "unsignedLongValue", "unsignedLongLongValue",
-                             "floatValue", "doubleValue", "longDoubleValue",
-                             "integerValue", "floatValue", "doubleValue"});
+        REQUIRE(names == std::vector<std::string>{"nestedStruct", "count", "simpleStruct", "integerValue", "floatValue",
+                                                  "doubleValue", "primitiveTypes", "booleanValue", "characterValue",
+                                                  "shortValue", "integerValue", "longValue", "longLongValue",
+                                                  "unsignedCharValue", "unsignedShortValue", "unsignedIntValue",
+                                                  "unsignedLongValue", "unsignedLongLongValue", "floatValue", "doubleValue",
+                                                  "longDoubleValue", "simpleStruct", "integerValue", "floatValue",
+                                                  "doubleValue"});
     }
 
     SECTION("Field values")
