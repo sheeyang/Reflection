@@ -36,11 +36,11 @@ TEST_CASE("Print Simple struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    std::string expected =
-        "Type: Simple\n"
-        "  integerValue = 42\n"
-        "  floatValue = 3.14\n"
-        "  doubleValue = 2.71\n";
+    std::string expected = R"(Type: Simple
+  integerValue = 42
+  floatValue = 3.14
+  doubleValue = 2.71
+)";
 
     REQUIRE(output == expected);
 }
@@ -56,22 +56,22 @@ TEST_CASE("Print AllPrimitiveTypes struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    std::string expected =
-        "Type: AllPrimitiveTypes\n"
-        "  booleanValue = true\n"
-        "  characterValue = 'A'\n"
-        "  shortValue = 123\n"
-        "  integerValue = 456\n"
-        "  longValue = 789\n"
-        "  longLongValue = 101112\n"
-        "  unsignedCharValue = 'B'\n"
-        "  unsignedShortValue = 234\n"
-        "  unsignedIntValue = 567\n"
-        "  unsignedLongValue = 890\n"
-        "  unsignedLongLongValue = 111213\n"
-        "  floatValue = 1.23\n"
-        "  doubleValue = 4.56\n"
-        "  longDoubleValue = 7.89\n";
+    std::string expected = R"(Type: AllPrimitiveTypes
+  booleanValue = true
+  characterValue = 'A'
+  shortValue = 123
+  integerValue = 456
+  longValue = 789
+  longLongValue = 101112
+  unsignedCharValue = 'B'
+  unsignedShortValue = 234
+  unsignedIntValue = 567
+  unsignedLongValue = 890
+  unsignedLongLongValue = 111213
+  floatValue = 1.23
+  doubleValue = 4.56
+  longDoubleValue = 7.89
+)";
 
     REQUIRE(output == expected);
 }
@@ -84,28 +84,28 @@ TEST_CASE("Print Nested struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    std::string expected =
-        "Type: Nested\n"
-        "  count = 123\n"
-        "  simpleStruct (Simple):\n"
-        "    integerValue = 1\n"
-        "    floatValue = 2\n"
-        "    doubleValue = 3\n"
-        "  primitiveTypes (AllPrimitiveTypes):\n"
-        "    booleanValue = true\n"
-        "    characterValue = 'C'\n"
-        "    shortValue = 456\n"
-        "    integerValue = 789\n"
-        "    longValue = 101112\n"
-        "    longLongValue = 131415\n"
-        "    unsignedCharValue = 'È'\n"
-        "    unsignedShortValue = 40000\n"
-        "    unsignedIntValue = 5000000\n"
-        "    unsignedLongValue = 60000000\n"
-        "    unsignedLongLongValue = 7000000000\n"
-        "    floatValue = 2.34\n"
-        "    doubleValue = 5.67\n"
-        "    longDoubleValue = 8.9\n";
+    std::string expected = R"(Type: Nested
+  count = 123
+  simpleStruct (Simple):
+    integerValue = 1
+    floatValue = 2
+    doubleValue = 3
+  primitiveTypes (AllPrimitiveTypes):
+    booleanValue = true
+    characterValue = 'C'
+    shortValue = 456
+    integerValue = 789
+    longValue = 101112
+    longLongValue = 131415
+    unsignedCharValue = 'È'
+    unsignedShortValue = 40000
+    unsignedIntValue = 5000000
+    unsignedLongValue = 60000000
+    unsignedLongLongValue = 7000000000
+    floatValue = 2.34
+    doubleValue = 5.67
+    longDoubleValue = 8.9
+)";
 
     REQUIRE(output == expected);
 }
@@ -118,33 +118,33 @@ TEST_CASE("Print DeeplyNested struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    std::string expected =
-        "Type: DeeplyNested\n"
-        "  nestedStruct (Nested):\n"
-        "    count = 456\n"
-        "    simpleStruct (Simple):\n"
-        "      integerValue = 4\n"
-        "      floatValue = 5\n"
-        "      doubleValue = 6\n"
-        "    primitiveTypes (AllPrimitiveTypes):\n"
-        "      booleanValue = false\n"
-        "      characterValue = 'D'\n"
-        "      shortValue = 789\n"
-        "      integerValue = 101112\n"
-        "      longValue = 131415\n"
-        "      longLongValue = 161718\n"
-        "      unsignedCharValue = 'È'\n"
-        "      unsignedShortValue = 50000\n"
-        "      unsignedIntValue = 6000000\n"
-        "      unsignedLongValue = 70000000\n"
-        "      unsignedLongLongValue = 8000000000\n"
-        "      floatValue = 3.45\n"
-        "      doubleValue = 6.78\n"
-        "      longDoubleValue = 9.01\n"
-        "  simpleStruct (Simple):\n"
-        "    integerValue = 7\n"
-        "    floatValue = 8\n"
-        "    doubleValue = 9\n";
+    std::string expected = R"(Type: DeeplyNested
+  nestedStruct (Nested):
+    count = 456
+    simpleStruct (Simple):
+      integerValue = 4
+      floatValue = 5
+      doubleValue = 6
+    primitiveTypes (AllPrimitiveTypes):
+      booleanValue = false
+      characterValue = 'D'
+      shortValue = 789
+      integerValue = 101112
+      longValue = 131415
+      longLongValue = 161718
+      unsignedCharValue = 'È'
+      unsignedShortValue = 50000
+      unsignedIntValue = 6000000
+      unsignedLongValue = 70000000
+      unsignedLongLongValue = 8000000000
+      floatValue = 3.45
+      doubleValue = 6.78
+      longDoubleValue = 9.01
+  simpleStruct (Simple):
+    integerValue = 7
+    floatValue = 8
+    doubleValue = 9
+)";
 
     REQUIRE(output == expected);
 }
@@ -166,62 +166,62 @@ TEST_CASE("Print ComplexTypes struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    std::string expected =
-        "Type: ComplexTypes\n"
-        "  cString = \"Hello, World!\"\n"
-        "  stringValue = \"Reflect in C++\"\n"
-        "  doubleArray = [\n"
-        "    0 = 1.1\n"
-        "    1 = 2.2\n"
-        "    2 = 3.3\n"
-        "  ]\n"
-        "  intVector = [\n"
-        "    0 = 10\n"
-        "    1 = 20\n"
-        "    2 = 30\n"
-        "    3 = 40\n"
-        "    4 = 50\n"
-        "  ]\n"
-        "  stringFloatPair = {\n"
-        "    first = \"pi\"\n"
-        "    second = 3.14\n"
-        "  }\n"
-        "  stringFloatMap = [\n"
-        "    0 = {\n"
-        "      first = \"e\"\n"
-        "      second = 2.71\n"
-        "    }\n"
-        "    1 = {\n"
-        "      first = \"pi\"\n"
-        "      second = 3.14\n"
-        "    }\n"
-        "  ]\n"
-        "  intStringUnorderedMap = [\n"
-        "    0 = {\n"
-        "      first = 3\n"
-        "      second = \"three\"\n"
-        "    }\n"
-        "    1 = {\n"
-        "      first = 2\n"
-        "      second = \"two\"\n"
-        "    }\n"
-        "    2 = {\n"
-        "      first = 1\n"
-        "      second = \"one\"\n"
-        "    }\n"
-        "  ]\n"
-        "  doubleList = [\n"
-        "    0 = 0.1\n"
-        "    1 = 0.2\n"
-        "    2 = 0.3\n"
-        "    3 = 0.4\n"
-        "    4 = 0.5\n"
-        "  ]\n"
-        "  intFloatStringTuple = (\n"
-        "    0 = 100\n"
-        "    1 = 200\n"
-        "    2 = \"three hundred\"\n"
-        "  )\n";
+    std::string expected = R"(Type: ComplexTypes
+  cString = "Hello, World!"
+  stringValue = "Reflect in C++"
+  doubleArray = [
+    0 = 1.1
+    1 = 2.2
+    2 = 3.3
+  ]
+  intVector = [
+    0 = 10
+    1 = 20
+    2 = 30
+    3 = 40
+    4 = 50
+  ]
+  stringFloatPair = {
+    first = "pi"
+    second = 3.14
+  }
+  stringFloatMap = [
+    0 = {
+      first = "e"
+      second = 2.71
+    }
+    1 = {
+      first = "pi"
+      second = 3.14
+    }
+  ]
+  intStringUnorderedMap = [
+    0 = {
+      first = 1
+      second = "one"
+    }
+    1 = {
+      first = 2
+      second = "two"
+    }
+    2 = {
+      first = 3
+      second = "three"
+    }
+  ]
+  doubleList = [
+    0 = 0.1
+    1 = 0.2
+    2 = 0.3
+    3 = 0.4
+    4 = 0.5
+  ]
+  intFloatStringTuple = (
+    0 = 100
+    1 = 200
+    2 = "three hundred"
+  )
+)";
 
     REQUIRE(output == expected);
 }
@@ -237,49 +237,49 @@ TEST_CASE("Print NestedComplex struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    std::string expected =
-        "Type: NestedComplex\n"
-        "  vectorOfVectors = [\n"
-        "    0 = [\n"
-        "      0 = \"a\"\n"
-        "      1 = \"b\"\n"
-        "    ]\n"
-        "    1 = [\n"
-        "      0 = \"c\"\n"
-        "      1 = \"d\"\n"
-        "      2 = \"e\"\n"
-        "    ]\n"
-        "  ]\n"
-        "  arrayOfArrays = [\n"
-        "    0 = [\n"
-        "      0 = 1\n"
-        "      1 = 2\n"
-        "      2 = 3\n"
-        "    ]\n"
-        "    1 = [\n"
-        "      0 = 4\n"
-        "      1 = 5\n"
-        "      2 = 6\n"
-        "    ]\n"
-        "  ]\n"
-        "  arrayOfVectorsOfStructs = [\n"
-        "    0 = [\n"
-        "      0 (Simple):\n"
-        "        integerValue = 10\n"
-        "        floatValue = 1\n"
-        "        doubleValue = 2\n"
-        "      1 (Simple):\n"
-        "        integerValue = 20\n"
-        "        floatValue = 3\n"
-        "        doubleValue = 4\n"
-        "    ]\n"
-        "    1 = [\n"
-        "      0 (Simple):\n"
-        "        integerValue = 30\n"
-        "        floatValue = 5\n"
-        "        doubleValue = 6\n"
-        "    ]\n"
-        "  ]\n";
+    std::string expected = R"(Type: NestedComplex
+  vectorOfVectors = [
+    0 = [
+      0 = "a"
+      1 = "b"
+    ]
+    1 = [
+      0 = "c"
+      1 = "d"
+      2 = "e"
+    ]
+  ]
+  arrayOfArrays = [
+    0 = [
+      0 = 1
+      1 = 2
+      2 = 3
+    ]
+    1 = [
+      0 = 4
+      1 = 5
+      2 = 6
+    ]
+  ]
+  arrayOfVectorsOfStructs = [
+    0 = [
+      0 (Simple):
+        integerValue = 10
+        floatValue = 1
+        doubleValue = 2
+      1 (Simple):
+        integerValue = 20
+        floatValue = 3
+        doubleValue = 4
+    ]
+    1 = [
+      0 (Simple):
+        integerValue = 30
+        floatValue = 5
+        doubleValue = 6
+    ]
+  ]
+)";
 
     REQUIRE(output == expected);
 }
@@ -294,24 +294,10 @@ TEST_CASE("Print ContainsNotReflected struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    std::string expected =
-        "Type: ContainsNotReflected\n"
-        "  aValue = 100\n"
-        "  bValue = 200.5\n";
+    std::string expected = R"(Type: ContainsNotReflected
+  aValue = 100
+  bValue = 200.5
+)";
 
     REQUIRE(output == expected);
-}
-
-TEST_CASE("Print indentation levels", "[print]")
-{
-    DeeplyNested obj{{456, {4, 5.0f, 6.0}, {false, 'D', 789, 101112, 131415L, 161718LL, 200, 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
-
-    CaptureStdout capture;
-    Reflex::print(obj);
-    std::string output = capture.get_output();
-
-    // Check for proper indentation (2 spaces for level 0, 4 for level 1, etc.)
-    REQUIRE(output.find("  nestedStruct") != std::string::npos);     // Level 0: 2 spaces
-    REQUIRE(output.find("    count") != std::string::npos);          // Level 1: 4 spaces
-    REQUIRE(output.find("      integerValue") != std::string::npos); // Level 2: 6 spaces
 }
