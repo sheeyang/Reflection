@@ -32,22 +32,6 @@ namespace Reflex
         {
             std::cout << indent << name << " = \"" << (value ? value : "null") << "\"\n";
         }
-        else if constexpr (is_pair<ValueType>)
-        {
-            std::cout << indent << name << " = {\n";
-            print_value("first", value.first, nest_level + 1);
-            print_value("second", value.second, nest_level + 1);
-            std::cout << indent << "}\n";
-        }
-        else if constexpr (is_tuple<ValueType>)
-        {
-            std::cout << indent << name << " = (\n";
-            std::apply([&](auto &...args)
-                       {
-                int i = 0;
-                ((print_value(std::to_string(i++), args, nest_level + 1)), ...); }, value);
-            std::cout << indent << ")\n";
-        }
         else if constexpr (is_iterable_v<ValueType>)
         {
             // Iterable containers (arrays, vectors, lists, maps, etc.)
@@ -58,6 +42,22 @@ namespace Reflex
                 print_value(std::to_string(i++), elem, nest_level + 1);
             }
             std::cout << indent << "]\n";
+        }
+        else if constexpr (is_pair_v<ValueType>)
+        {
+            std::cout << indent << name << " = {\n";
+            print_value("first", value.first, nest_level + 1);
+            print_value("second", value.second, nest_level + 1);
+            std::cout << indent << "}\n";
+        }
+        else if constexpr (is_tuple_v<ValueType>)
+        {
+            std::cout << indent << name << " = (\n";
+            std::apply([&](auto &...args)
+                       {
+                int i = 0;
+                ((print_value(std::to_string(i++), args, nest_level + 1)), ...); }, value);
+            std::cout << indent << ")\n";
         }
         else if constexpr (is_reflectable_v<ValueType>)
         {

@@ -11,27 +11,13 @@ struct ReflectionInfo;
 template <typename T>
 constexpr bool is_reflectable_v = requires { ReflectionInfo<T>::fields; };
 
-// Helper concept to check if a type is a std::array
+// Helper concept to check if a type is a std::tuple
 template <typename T>
-struct is_array_helper : std::false_type
-{
-};
-
-template <typename T, std::size_t N>
-struct is_array_helper<std::array<T, N>> : std::true_type
-{
-};
-
-template <typename T>
-concept is_array = is_array_helper<T>::value;
-
-// Helper concept to check if a type is a std::tuple (but not std::array)
-template <typename T>
-concept is_tuple = requires { std::tuple_size<T>::value; } && !is_array<T>;
+concept is_tuple_v = requires { std::tuple_size<T>::value; };
 
 // Helper concept to check if a type is a std::pair
 template <typename T>
-concept is_pair = requires { typename T::first_type; typename T::second_type; };
+concept is_pair_v = requires { typename T::first_type; typename T::second_type; };
 
 // Helper concept to check if a type is iterable (has size, begin, end)
 template <typename T>
