@@ -66,10 +66,16 @@ concept has_reflector_v = requires { typename T::Reflector; };
 namespace Reflex
 {
     template <typename T>
-    static constexpr size_t field_count() { return std::tuple_size_v<decltype(ReflectionInfo<T>::fields)>; }
+    static constexpr std::string_view class_name = ReflectionInfo<T>::class_name;
 
     template <typename T>
-    static constexpr size_t field_count(const T &) { return field_count<T>(); }
+    static constexpr std::string_view get_class_name(const T &) { return class_name<T>; }
+
+    template <typename T>
+    static constexpr size_t field_count = std::tuple_size_v<decltype(ReflectionInfo<T>::fields)>;
+
+    template <typename T>
+    static constexpr size_t get_field_count(const T &) { return field_count<T>; }
 
     template <typename T>
     static void for_each_field(T &obj, auto &&func, int nest_level = 0)
