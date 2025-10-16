@@ -5,6 +5,7 @@
 #include <iostream>    // For std::cout
 #include <string>      // For std::string and std::to_string
 #include <string_view> // For std::string_view
+#include <array>       // For std::array
 
 // Count arguments (supports up to 20)
 #define COUNT_ARGS(...) COUNT_ARGS_IMPL(__VA_ARGS__, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
@@ -48,9 +49,23 @@ constexpr bool is_reflectable_v = requires { ReflectionInfo<T>::fields; };
 
 #define FIELD_PAIR(CLASS, FIELD) std::make_pair(#FIELD, &CLASS::FIELD)
 
-// Helper concept to check if a type is a std::tuple
+// Helper concept to check if a type is a std::array
 template <typename T>
-concept is_tuple = requires { std::tuple_size<T>::value; };
+struct is_array_helper : std::false_type
+{
+};
+
+template <typename T, std::size_t N>
+struct is_array_helper<std::array<T, N>> : std::true_type
+{
+};
+
+template <typename T>
+concept is_array = is_array_helper<T>::value;
+
+// Helper concept to check if a type is a std::tuple (but not std::array)
+template <typename T>
+concept is_tuple = requires { std::tuple_size<T>::value; } && !is_array<T>;
 
 // Helper concept to check if a type is a std::pair
 template <typename T>
