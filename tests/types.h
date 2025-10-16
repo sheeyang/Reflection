@@ -9,107 +9,107 @@
 
 struct Simple
 {
-    int a;
-    float b;
-    double c;
+    int integerValue;
+    float floatValue;
+    double doubleValue;
 };
-REFLECT_FIELDS(Simple, a, b, c)
+REFLECT_FIELDS(Simple, integerValue, floatValue, doubleValue)
 
 struct AllPrimitiveTypes
 {
-    bool a;
-    char b;
-    short c;
-    int d;
-    long e;
-    long long f;
-    unsigned char g;
-    unsigned short h;
-    unsigned int i;
-    unsigned long j;
-    unsigned long long k;
-    float l;
-    double m;
-    long double n;
+    bool booleanValue;
+    char characterValue;
+    short shortValue;
+    int integerValue;
+    long longValue;
+    long long longLongValue;
+    unsigned char unsignedCharValue;
+    unsigned short unsignedShortValue;
+    unsigned int unsignedIntValue;
+    unsigned long unsignedLongValue;
+    unsigned long long unsignedLongLongValue;
+    float floatValue;
+    double doubleValue;
+    long double longDoubleValue;
 };
-REFLECT_FIELDS(AllPrimitiveTypes, a, b, c, d, e, f, g, h, i, j, k, l, m, n)
+REFLECT_FIELDS(AllPrimitiveTypes, booleanValue, characterValue, shortValue, integerValue, longValue, longLongValue, unsignedCharValue, unsignedShortValue, unsignedIntValue, unsignedLongValue, unsignedLongLongValue, floatValue, doubleValue, longDoubleValue)
 
 struct Nested
 {
-    int a;
-    Simple s;
-    AllPrimitiveTypes apt;
+    int count;
+    Simple simpleStruct;
+    AllPrimitiveTypes primitiveTypes;
 };
-REFLECT_FIELDS(Nested, a, s, apt)
+REFLECT_FIELDS(Nested, count, simpleStruct, primitiveTypes)
 
 struct DeeplyNested
 {
-    Nested n;
-    Simple s;
+    Nested nestedStruct;
+    Simple simpleStruct;
 };
-REFLECT_FIELDS(DeeplyNested, n, s)
+REFLECT_FIELDS(DeeplyNested, nestedStruct, simpleStruct)
 
 struct ComplexTypes
 {
-    const char *cstr;
-    std::string str;
-    std::array<double, 3> arr;
-    std::vector<int> vec;
-    std::pair<std::string, float> pair;
-    std::map<std::string, float> mp;
-    std::unordered_map<int, std::string> ump;
-    std::list<double> lst;
-    std::tuple<int, float, std::string> tpl;
+    const char *cString;
+    std::string stringValue;
+    std::array<double, 3> doubleArray;
+    std::vector<int> intVector;
+    std::pair<std::string, float> stringFloatPair;
+    std::map<std::string, float> stringFloatMap;
+    std::unordered_map<int, std::string> intStringUnorderedMap;
+    std::list<double> doubleList;
+    std::tuple<int, float, std::string> intFloatStringTuple;
 };
 REFLECT_FIELDS(ComplexTypes,
-               cstr,
-               str,
-               arr,
-               vec,
-               pair,
-               mp,
-               ump,
-               lst,
-               tpl)
+               cString,
+               stringValue,
+               doubleArray,
+               intVector,
+               stringFloatPair,
+               stringFloatMap,
+               intStringUnorderedMap,
+               doubleList,
+               intFloatStringTuple)
 
 struct NestedComplex
 {
-    std::vector<std::vector<std::string>> vec_of_vec;
-    std::array<std::array<int, 3>, 2> arr_of_arr;
-    std::array<std::vector<Simple>, 2> arr_of_vec_of_struct;
+    std::vector<std::vector<std::string>> vectorOfVectors;
+    std::array<std::array<int, 3>, 2> arrayOfArrays;
+    std::array<std::vector<Simple>, 2> arrayOfVectorsOfStructs;
 };
-REFLECT_FIELDS(NestedComplex, vec_of_vec, arr_of_arr, arr_of_vec_of_struct)
+REFLECT_FIELDS(NestedComplex, vectorOfVectors, arrayOfArrays, arrayOfVectorsOfStructs)
 
 struct NotReflected
 {
-    int x;
-    float y;
+    int xValue;
+    float yValue;
 };
 
 struct ContainsNotReflected
 {
-    NotReflected nr;
+    NotReflected notReflectedStruct;
 
     struct Reflector
     {
-        int a;
-        float b;
+        int aValue;
+        float bValue;
 
         static ContainsNotReflected create(const Reflector &r)
         {
             ContainsNotReflected obj;
-            obj.nr.x = r.a;
-            obj.nr.y = r.b;
+            obj.notReflectedStruct.xValue = r.aValue;
+            obj.notReflectedStruct.yValue = r.bValue;
             return obj;
         }
 
         static Reflector reflect(const ContainsNotReflected &obj)
         {
             Reflector r;
-            r.a = obj.nr.x;
-            r.b = obj.nr.y;
+            r.aValue = obj.notReflectedStruct.xValue;
+            r.bValue = obj.notReflectedStruct.yValue;
             return r;
         }
     };
 };
-REFLECT_CUSTOM(ContainsNotReflected, a, b)
+REFLECT_CUSTOM(ContainsNotReflected, aValue, bValue)
