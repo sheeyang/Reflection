@@ -24,12 +24,24 @@ set(RAPIDJSON_BUILD_DOC OFF CACHE BOOL "" FORCE)
 set(RAPIDJSON_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(RAPIDJSON_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
+# Fetch Catch2 testing framework
+FetchContent_Declare(
+  Catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+  GIT_TAG        v3.8.1
+)
+
+FetchContent_MakeAvailable(Catch2)
+
 # Collect all source files from tests directory
 file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/tests/*.cpp")
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/include/*.h")
 
 # Create executable
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+
+# Link libraries
+target_link_libraries(${PROJECT_NAME} PRIVATE Catch2::Catch2WithMain)
 
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE 
