@@ -1,6 +1,6 @@
 #include "../include/Reflect.h"
 #include "types.h"
-#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_all.hpp>
 #include <sstream>
 #include <iostream>
 
@@ -8,55 +8,55 @@
 class CaptureStdout
 {
 private:
-    std::streambuf *old_stdout;
-    std::ostringstream captured;
+  std::streambuf *old_stdout;
+  std::ostringstream captured;
 
 public:
-    CaptureStdout() : old_stdout(std::cout.rdbuf())
-    {
-        std::cout.rdbuf(captured.rdbuf());
-    }
+  CaptureStdout() : old_stdout(std::cout.rdbuf())
+  {
+    std::cout.rdbuf(captured.rdbuf());
+  }
 
-    ~CaptureStdout()
-    {
-        std::cout.rdbuf(old_stdout);
-    }
+  ~CaptureStdout()
+  {
+    std::cout.rdbuf(old_stdout);
+  }
 
-    std::string get_output() const
-    {
-        return captured.str();
-    }
+  std::string get_output() const
+  {
+    return captured.str();
+  }
 };
 
 TEST_CASE("Print Simple struct", "[print]")
 {
-    Simple obj{42, 3.14f, 2.71};
+  Simple obj{42, 3.14f, 2.71};
 
-    CaptureStdout capture;
-    Reflex::print(obj);
-    std::string output = capture.get_output();
+  CaptureStdout capture;
+  Reflex::print(obj);
+  std::string output = capture.get_output();
 
-    std::string expected = R"(Type: Simple
+  std::string expected = R"(Type: Simple
   integerValue = 42
   floatValue = 3.14
   doubleValue = 2.71
 )";
 
-    REQUIRE(output == expected);
+  REQUIRE(output == expected);
 }
 
 TEST_CASE("Print AllPrimitiveTypes struct", "[print]")
 {
-    AllPrimitiveTypes obj{
-        true, 'A', 123, 456, 789L, 101112LL,
-        'B', 234, 567, 890UL, 111213ULL,
-        1.23f, 4.56, 7.89L};
+  AllPrimitiveTypes obj{
+      true, 'A', 123, 456, 789L, 101112LL,
+      'B', 234, 567, 890UL, 111213ULL,
+      1.23f, 4.56, 7.89L};
 
-    CaptureStdout capture;
-    Reflex::print(obj);
-    std::string output = capture.get_output();
+  CaptureStdout capture;
+  Reflex::print(obj);
+  std::string output = capture.get_output();
 
-    std::string expected = R"(Type: AllPrimitiveTypes
+  std::string expected = R"(Type: AllPrimitiveTypes
   booleanValue = true
   characterValue = 'A'
   shortValue = 123
@@ -73,18 +73,18 @@ TEST_CASE("Print AllPrimitiveTypes struct", "[print]")
   longDoubleValue = 7.89
 )";
 
-    REQUIRE(output == expected);
+  REQUIRE(output == expected);
 }
 
 TEST_CASE("Print Nested struct", "[print]")
 {
-    Nested obj{123, {1, 2.0f, 3.0}, {true, 'C', 456, 789, 101112L, 131415LL, 'D', 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
+  Nested obj{123, {1, 2.0f, 3.0}, {true, 'C', 456, 789, 101112L, 131415LL, 'D', 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
 
-    CaptureStdout capture;
-    Reflex::print(obj);
-    std::string output = capture.get_output();
+  CaptureStdout capture;
+  Reflex::print(obj);
+  std::string output = capture.get_output();
 
-    std::string expected = R"(Type: Nested
+  std::string expected = R"(Type: Nested
   count = 123
   simpleStruct (Simple):
     integerValue = 1
@@ -107,18 +107,18 @@ TEST_CASE("Print Nested struct", "[print]")
     longDoubleValue = 8.9
 )";
 
-    REQUIRE(output == expected);
+  REQUIRE(output == expected);
 }
 
 TEST_CASE("Print DeeplyNested struct", "[print]")
 {
-    DeeplyNested obj{{456, {4, 5.0f, 6.0}, {false, 'D', 789, 101112, 131415L, 161718LL, 'E', 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
+  DeeplyNested obj{{456, {4, 5.0f, 6.0}, {false, 'D', 789, 101112, 131415L, 161718LL, 'E', 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
 
-    CaptureStdout capture;
-    Reflex::print(obj);
-    std::string output = capture.get_output();
+  CaptureStdout capture;
+  Reflex::print(obj);
+  std::string output = capture.get_output();
 
-    std::string expected = R"(Type: DeeplyNested
+  std::string expected = R"(Type: DeeplyNested
   nestedStruct (Nested):
     count = 456
     simpleStruct (Simple):
@@ -146,29 +146,27 @@ TEST_CASE("Print DeeplyNested struct", "[print]")
     doubleValue = 9
 )";
 
-    REQUIRE(output == expected);
+  REQUIRE(output == expected);
 }
 
 TEST_CASE("Print ComplexTypes struct", "[print]")
 {
-    ComplexTypes obj{
-        "Hello, World!",
-        "Reflect in C++",
-        {1.1, 2.2, 3.3},
-        {10, 20, 30, 40, 50},
-        {"pi", 3.14f},
-        {{"pi", 3.14f}, {"e", 2.71f}},
-        {{1, "one"}, {2, "two"}, {3, "three"}},
-        {0.1, 0.2, 0.3, 0.4, 0.5},
-        {100, 200.0f, "three hundred"}};
+  ComplexTypes obj{
+      "Hello, World!",
+      {1.1, 2.2, 3.3},
+      {10, 20, 30, 40, 50},
+      {"pi", 3.14f},
+      {{"pi", 3.14f}, {"e", 2.71f}},
+      {{1, "one"}, {2, "two"}, {3, "three"}},
+      {0.1, 0.2, 0.3, 0.4, 0.5},
+      {100, 200.0f, "three hundred"}};
 
-    CaptureStdout capture;
-    Reflex::print(obj);
-    std::string output = capture.get_output();
+  CaptureStdout capture;
+  Reflex::print(obj);
+  std::string output = capture.get_output();
 
-    std::string expected = R"(Type: ComplexTypes
-  cString = "Hello, World!"
-  stringValue = "Reflect in C++"
+  std::string expected = R"(Type: ComplexTypes
+  stringValue = "Hello, World!"
   doubleArray = [
     0 = 1.1
     1 = 2.2
@@ -223,21 +221,21 @@ TEST_CASE("Print ComplexTypes struct", "[print]")
   )
 )";
 
-    REQUIRE(output == expected);
+  REQUIRE(output == expected);
 }
 
 TEST_CASE("Print NestedComplex struct", "[print]")
 {
-    NestedComplex obj{
-        {{"a", "b"}, {"c", "d", "e"}},
-        {{{1, 2, 3}, {4, 5, 6}}},
-        {{{Simple{10, 1.0f, 2.0}, Simple{20, 3.0f, 4.0}}, {Simple{30, 5.0f, 6.0}}}}};
+  NestedComplex obj{
+      {{"a", "b"}, {"c", "d", "e"}},
+      {{{1, 2, 3}, {4, 5, 6}}},
+      {{{Simple{10, 1.0f, 2.0}, Simple{20, 3.0f, 4.0}}, {Simple{30, 5.0f, 6.0}}}}};
 
-    CaptureStdout capture;
-    Reflex::print(obj);
-    std::string output = capture.get_output();
+  CaptureStdout capture;
+  Reflex::print(obj);
+  std::string output = capture.get_output();
 
-    std::string expected = R"(Type: NestedComplex
+  std::string expected = R"(Type: NestedComplex
   vectorOfVectors = [
     0 = [
       0 = "a"
@@ -281,23 +279,23 @@ TEST_CASE("Print NestedComplex struct", "[print]")
   ]
 )";
 
-    REQUIRE(output == expected);
+  REQUIRE(output == expected);
 }
 
 TEST_CASE("Print ContainsNotReflected struct", "[print]")
 {
-    ContainsNotReflected obj;
-    obj.notReflectedStruct.xValue = 100;
-    obj.notReflectedStruct.yValue = 200.5f;
+  ContainsNotReflected obj;
+  obj.notReflectedStruct.xValue = 100;
+  obj.notReflectedStruct.yValue = 200.5f;
 
-    CaptureStdout capture;
-    Reflex::print(obj);
-    std::string output = capture.get_output();
+  CaptureStdout capture;
+  Reflex::print(obj);
+  std::string output = capture.get_output();
 
-    std::string expected = R"(Type: ContainsNotReflected
+  std::string expected = R"(Type: ContainsNotReflected
   aValue = 100
   bValue = 200.5
 )";
 
-    REQUIRE(output == expected);
+  REQUIRE(output == expected);
 }

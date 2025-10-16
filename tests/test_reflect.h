@@ -2,8 +2,7 @@
 
 #include "../include/Reflect.h"
 #include "types.h"
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/benchmark/catch_benchmark.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("Simple struct reflection", "[reflection]")
 {
@@ -213,7 +212,6 @@ TEST_CASE("ComplexTypes struct reflection", "[reflection]")
 {
     ComplexTypes obj{
         "Hello, World!",
-        "Reflect in C++",
         {1.1, 2.2, 3.3},
         {10, 20, 30, 40, 50},
         {"pi", 3.14f},
@@ -229,7 +227,7 @@ TEST_CASE("ComplexTypes struct reflection", "[reflection]")
 
     SECTION("Field count")
     {
-        REQUIRE(Reflex::get_field_count(obj) == 9);
+        REQUIRE(Reflex::get_field_count(obj) == 8);
     }
 
     SECTION("Set field value")
@@ -240,8 +238,7 @@ TEST_CASE("ComplexTypes struct reflection", "[reflection]")
 
     SECTION("Field values")
     {
-        REQUIRE(std::string(obj.cString) == "Hello, World!");
-        REQUIRE(obj.stringValue == "Reflect in C++");
+        REQUIRE(obj.stringValue == "Hello, World!");
         REQUIRE(obj.doubleArray == std::array<double, 3>{1.1, 2.2, 3.3});
         REQUIRE(obj.intVector == std::vector<int>{10, 20, 30, 40, 50});
         REQUIRE(obj.stringFloatPair == std::pair<std::string, float>{"pi", 3.14f});
@@ -259,10 +256,10 @@ TEST_CASE("ComplexTypes struct reflection", "[reflection]")
                                { 
                                    names.push_back(std::string(name)); 
                                    nest_levels.push_back(nest_level); });
-        REQUIRE(names.size() == 9);
+        REQUIRE(names.size() == 8);
         REQUIRE(names == std::vector<std::string>{
-                             "cString", "stringValue", "doubleArray", "intVector", "stringFloatPair",
+                             "stringValue", "doubleArray", "intVector", "stringFloatPair",
                              "stringFloatMap", "intStringUnorderedMap", "doubleList", "intFloatStringTuple"});
-        REQUIRE(nest_levels == std::vector<int>(9, 0));
+        REQUIRE(nest_levels == std::vector<int>(8, 0));
     }
 }

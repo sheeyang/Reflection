@@ -28,10 +28,6 @@ namespace Reflex
         {
             std::cout << indent << name << " = \"" << value << "\"\n";
         }
-        else if constexpr (std::is_same_v<ValueType, const char *>)
-        {
-            std::cout << indent << name << " = \"" << (value ? value : "null") << "\"\n";
-        }
         else if constexpr (is_iterable_v<ValueType>)
         {
             // Iterable containers (arrays, vectors, lists, maps, etc.)

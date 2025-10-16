@@ -51,7 +51,6 @@ REFLECT_FIELDS(DeeplyNested, nestedStruct, simpleStruct)
 
 struct ComplexTypes
 {
-    const char *cString;
     std::string stringValue;
     std::array<double, 3> doubleArray;
     std::vector<int> intVector;
@@ -62,7 +61,6 @@ struct ComplexTypes
     std::tuple<int, float, std::string> intFloatStringTuple;
 };
 REFLECT_FIELDS(ComplexTypes,
-               cString,
                stringValue,
                doubleArray,
                intVector,
