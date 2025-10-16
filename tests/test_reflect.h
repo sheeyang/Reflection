@@ -77,3 +77,27 @@ TEST_CASE("Nested struct reflection", "[reflection]")
         REQUIRE(count == 20);
     }
 }
+
+TEST_CASE("DeeplyNested struct reflection", "[reflection]")
+{
+    DeeplyNested obj{{456, {4, 5.0f, 6.0}, {false, 'D', 789, 101112, 131415L, 161718LL, 200, 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
+
+    SECTION("Class name")
+    {
+        REQUIRE(Reflex::get_class_name(obj) == "DeeplyNested");
+    }
+
+    SECTION("Field count")
+    {
+        REQUIRE(Reflex::get_field_count(obj) == 2);
+    }
+
+    SECTION("Field iteration")
+    {
+        int count = 0;
+        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
+                               { count++; });
+        // Total fields: 2 (DeeplyNested) + 3 (Nested) + 3 (Simple) + 14 (AllPrimitiveTypes) + 3 (Simple) = 25
+        REQUIRE(count == 25);
+    }
+}
