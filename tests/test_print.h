@@ -36,10 +36,13 @@ TEST_CASE("Print Simple struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    REQUIRE(output.find("Type: Simple") != std::string::npos);
-    REQUIRE(output.find("integerValue = 42") != std::string::npos);
-    REQUIRE(output.find("floatValue = 3.14") != std::string::npos);
-    REQUIRE(output.find("doubleValue = 2.71") != std::string::npos);
+    std::string expected =
+        "Type: Simple\n"
+        "  integerValue = 42\n"
+        "  floatValue = 3.14\n"
+        "  doubleValue = 2.71\n";
+
+    REQUIRE(output == expected);
 }
 
 TEST_CASE("Print AllPrimitiveTypes struct", "[print]")
@@ -53,21 +56,24 @@ TEST_CASE("Print AllPrimitiveTypes struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    REQUIRE(output.find("Type: AllPrimitiveTypes") != std::string::npos);
-    REQUIRE(output.find("booleanValue = true") != std::string::npos);
-    REQUIRE(output.find("characterValue = 'A'") != std::string::npos);
-    REQUIRE(output.find("shortValue = 123") != std::string::npos);
-    REQUIRE(output.find("integerValue = 456") != std::string::npos);
-    REQUIRE(output.find("longValue = 789") != std::string::npos);
-    REQUIRE(output.find("longLongValue = 101112") != std::string::npos);
-    REQUIRE(output.find("unsignedCharValue = 'B'") != std::string::npos);
-    REQUIRE(output.find("unsignedShortValue = 234") != std::string::npos);
-    REQUIRE(output.find("unsignedIntValue = 567") != std::string::npos);
-    REQUIRE(output.find("unsignedLongValue = 890") != std::string::npos);
-    REQUIRE(output.find("unsignedLongLongValue = 111213") != std::string::npos);
-    REQUIRE(output.find("floatValue = 1.23") != std::string::npos);
-    REQUIRE(output.find("doubleValue = 4.56") != std::string::npos);
-    REQUIRE(output.find("longDoubleValue = 7.89") != std::string::npos);
+    std::string expected =
+        "Type: AllPrimitiveTypes\n"
+        "  booleanValue = true\n"
+        "  characterValue = 'A'\n"
+        "  shortValue = 123\n"
+        "  integerValue = 456\n"
+        "  longValue = 789\n"
+        "  longLongValue = 101112\n"
+        "  unsignedCharValue = 'B'\n"
+        "  unsignedShortValue = 234\n"
+        "  unsignedIntValue = 567\n"
+        "  unsignedLongValue = 890\n"
+        "  unsignedLongLongValue = 111213\n"
+        "  floatValue = 1.23\n"
+        "  doubleValue = 4.56\n"
+        "  longDoubleValue = 7.89\n";
+
+    REQUIRE(output == expected);
 }
 
 TEST_CASE("Print Nested struct", "[print]")
@@ -78,15 +84,30 @@ TEST_CASE("Print Nested struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    REQUIRE(output.find("Type: Nested") != std::string::npos);
-    REQUIRE(output.find("count = 123") != std::string::npos);
-    REQUIRE(output.find("simpleStruct (Simple):") != std::string::npos);
-    REQUIRE(output.find("integerValue = 1") != std::string::npos);
-    REQUIRE(output.find("floatValue = 2") != std::string::npos);
-    REQUIRE(output.find("doubleValue = 3") != std::string::npos);
-    REQUIRE(output.find("primitiveTypes (AllPrimitiveTypes):") != std::string::npos);
-    REQUIRE(output.find("booleanValue = true") != std::string::npos);
-    REQUIRE(output.find("characterValue = 'C'") != std::string::npos);
+    std::string expected =
+        "Type: Nested\n"
+        "  count = 123\n"
+        "  simpleStruct (Simple):\n"
+        "    integerValue = 1\n"
+        "    floatValue = 2\n"
+        "    doubleValue = 3\n"
+        "  primitiveTypes (AllPrimitiveTypes):\n"
+        "    booleanValue = true\n"
+        "    characterValue = 'C'\n"
+        "    shortValue = 456\n"
+        "    integerValue = 789\n"
+        "    longValue = 101112\n"
+        "    longLongValue = 131415\n"
+        "    unsignedCharValue = 'È'\n"
+        "    unsignedShortValue = 40000\n"
+        "    unsignedIntValue = 5000000\n"
+        "    unsignedLongValue = 60000000\n"
+        "    unsignedLongLongValue = 7000000000\n"
+        "    floatValue = 2.34\n"
+        "    doubleValue = 5.67\n"
+        "    longDoubleValue = 8.9\n";
+
+    REQUIRE(output == expected);
 }
 
 TEST_CASE("Print DeeplyNested struct", "[print]")
@@ -97,12 +118,35 @@ TEST_CASE("Print DeeplyNested struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    REQUIRE(output.find("Type: DeeplyNested") != std::string::npos);
-    REQUIRE(output.find("nestedStruct (Nested):") != std::string::npos);
-    REQUIRE(output.find("count = 456") != std::string::npos);
-    REQUIRE(output.find("simpleStruct (Simple):") != std::string::npos);
-    REQUIRE(output.find("integerValue = 4") != std::string::npos);
-    REQUIRE(output.find("integerValue = 7") != std::string::npos);
+    std::string expected =
+        "Type: DeeplyNested\n"
+        "  nestedStruct (Nested):\n"
+        "    count = 456\n"
+        "    simpleStruct (Simple):\n"
+        "      integerValue = 4\n"
+        "      floatValue = 5\n"
+        "      doubleValue = 6\n"
+        "    primitiveTypes (AllPrimitiveTypes):\n"
+        "      booleanValue = false\n"
+        "      characterValue = 'D'\n"
+        "      shortValue = 789\n"
+        "      integerValue = 101112\n"
+        "      longValue = 131415\n"
+        "      longLongValue = 161718\n"
+        "      unsignedCharValue = 'È'\n"
+        "      unsignedShortValue = 50000\n"
+        "      unsignedIntValue = 6000000\n"
+        "      unsignedLongValue = 70000000\n"
+        "      unsignedLongLongValue = 8000000000\n"
+        "      floatValue = 3.45\n"
+        "      doubleValue = 6.78\n"
+        "      longDoubleValue = 9.01\n"
+        "  simpleStruct (Simple):\n"
+        "    integerValue = 7\n"
+        "    floatValue = 8\n"
+        "    doubleValue = 9\n";
+
+    REQUIRE(output == expected);
 }
 
 TEST_CASE("Print ComplexTypes struct", "[print]")
@@ -122,22 +166,64 @@ TEST_CASE("Print ComplexTypes struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    REQUIRE(output.find("Type: ComplexTypes") != std::string::npos);
-    REQUIRE(output.find("cString = \"Hello, World!\"") != std::string::npos);
-    REQUIRE(output.find("stringValue = \"Reflect in C++\"") != std::string::npos);
-    REQUIRE(output.find("doubleArray = [") != std::string::npos);
-    REQUIRE(output.find("0 = 1.1") != std::string::npos);
-    REQUIRE(output.find("1 = 2.2") != std::string::npos);
-    REQUIRE(output.find("2 = 3.3") != std::string::npos);
-    REQUIRE(output.find("intVector = [") != std::string::npos);
-    REQUIRE(output.find("0 = 10") != std::string::npos);
-    REQUIRE(output.find("stringFloatPair = {") != std::string::npos);
-    REQUIRE(output.find("first = \"pi\"") != std::string::npos);
-    REQUIRE(output.find("second = 3.14") != std::string::npos);
-    REQUIRE(output.find("intFloatStringTuple = (") != std::string::npos);
-    REQUIRE(output.find("0 = 100") != std::string::npos);
-    REQUIRE(output.find("1 = 200") != std::string::npos);
-    REQUIRE(output.find("2 = \"three hundred\"") != std::string::npos);
+    std::string expected =
+        "Type: ComplexTypes\n"
+        "  cString = \"Hello, World!\"\n"
+        "  stringValue = \"Reflect in C++\"\n"
+        "  doubleArray = [\n"
+        "    0 = 1.1\n"
+        "    1 = 2.2\n"
+        "    2 = 3.3\n"
+        "  ]\n"
+        "  intVector = [\n"
+        "    0 = 10\n"
+        "    1 = 20\n"
+        "    2 = 30\n"
+        "    3 = 40\n"
+        "    4 = 50\n"
+        "  ]\n"
+        "  stringFloatPair = {\n"
+        "    first = \"pi\"\n"
+        "    second = 3.14\n"
+        "  }\n"
+        "  stringFloatMap = [\n"
+        "    0 = {\n"
+        "      first = \"e\"\n"
+        "      second = 2.71\n"
+        "    }\n"
+        "    1 = {\n"
+        "      first = \"pi\"\n"
+        "      second = 3.14\n"
+        "    }\n"
+        "  ]\n"
+        "  intStringUnorderedMap = [\n"
+        "    0 = {\n"
+        "      first = 3\n"
+        "      second = \"three\"\n"
+        "    }\n"
+        "    1 = {\n"
+        "      first = 2\n"
+        "      second = \"two\"\n"
+        "    }\n"
+        "    2 = {\n"
+        "      first = 1\n"
+        "      second = \"one\"\n"
+        "    }\n"
+        "  ]\n"
+        "  doubleList = [\n"
+        "    0 = 0.1\n"
+        "    1 = 0.2\n"
+        "    2 = 0.3\n"
+        "    3 = 0.4\n"
+        "    4 = 0.5\n"
+        "  ]\n"
+        "  intFloatStringTuple = (\n"
+        "    0 = 100\n"
+        "    1 = 200\n"
+        "    2 = \"three hundred\"\n"
+        "  )\n";
+
+    REQUIRE(output == expected);
 }
 
 TEST_CASE("Print NestedComplex struct", "[print]")
@@ -151,14 +237,51 @@ TEST_CASE("Print NestedComplex struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    REQUIRE(output.find("Type: NestedComplex") != std::string::npos);
-    REQUIRE(output.find("vectorOfVectors = [") != std::string::npos);
-    REQUIRE(output.find("0 = [") != std::string::npos);
-    REQUIRE(output.find("0 = \"a\"") != std::string::npos);
-    REQUIRE(output.find("1 = \"b\"") != std::string::npos);
-    REQUIRE(output.find("arrayOfArrays = [") != std::string::npos);
-    REQUIRE(output.find("arrayOfVectorsOfStructs = [") != std::string::npos);
-    REQUIRE(output.find("(Simple):") != std::string::npos);
+    std::string expected =
+        "Type: NestedComplex\n"
+        "  vectorOfVectors = [\n"
+        "    0 = [\n"
+        "      0 = \"a\"\n"
+        "      1 = \"b\"\n"
+        "    ]\n"
+        "    1 = [\n"
+        "      0 = \"c\"\n"
+        "      1 = \"d\"\n"
+        "      2 = \"e\"\n"
+        "    ]\n"
+        "  ]\n"
+        "  arrayOfArrays = [\n"
+        "    0 = [\n"
+        "      0 = 1\n"
+        "      1 = 2\n"
+        "      2 = 3\n"
+        "    ]\n"
+        "    1 = [\n"
+        "      0 = 4\n"
+        "      1 = 5\n"
+        "      2 = 6\n"
+        "    ]\n"
+        "  ]\n"
+        "  arrayOfVectorsOfStructs = [\n"
+        "    0 = [\n"
+        "      0 (Simple):\n"
+        "        integerValue = 10\n"
+        "        floatValue = 1\n"
+        "        doubleValue = 2\n"
+        "      1 (Simple):\n"
+        "        integerValue = 20\n"
+        "        floatValue = 3\n"
+        "        doubleValue = 4\n"
+        "    ]\n"
+        "    1 = [\n"
+        "      0 (Simple):\n"
+        "        integerValue = 30\n"
+        "        floatValue = 5\n"
+        "        doubleValue = 6\n"
+        "    ]\n"
+        "  ]\n";
+
+    REQUIRE(output == expected);
 }
 
 TEST_CASE("Print ContainsNotReflected struct", "[print]")
@@ -171,9 +294,12 @@ TEST_CASE("Print ContainsNotReflected struct", "[print]")
     Reflex::print(obj);
     std::string output = capture.get_output();
 
-    REQUIRE(output.find("Type: ContainsNotReflected") != std::string::npos);
-    REQUIRE(output.find("aValue = 100") != std::string::npos);
-    REQUIRE(output.find("bValue = 200.5") != std::string::npos);
+    std::string expected =
+        "Type: ContainsNotReflected\n"
+        "  aValue = 100\n"
+        "  bValue = 200.5\n";
+
+    REQUIRE(output == expected);
 }
 
 TEST_CASE("Print indentation levels", "[print]")
