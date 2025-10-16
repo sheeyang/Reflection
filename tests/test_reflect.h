@@ -53,3 +53,27 @@ TEST_CASE("AllPrimitiveTypes struct reflection", "[reflection]")
         REQUIRE(count == 14);
     }
 }
+
+TEST_CASE("Nested struct reflection", "[reflection]")
+{
+    Nested obj{123, {1, 2.0f, 3.0}, {true, 'C', 456, 789, 101112L, 131415LL, 200, 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
+
+    SECTION("Class name")
+    {
+        REQUIRE(Reflex::get_class_name(obj) == "Nested");
+    }
+
+    SECTION("Field count")
+    {
+        REQUIRE(Reflex::get_field_count(obj) == 3);
+    }
+
+    SECTION("Field iteration")
+    {
+        int count = 0;
+        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int)
+                               { count++; });
+        // Total fields: 3 (Nested) + 3 (Simple) + 14 (AllPrimitiveTypes) = 20
+        REQUIRE(count == 20);
+    }
+}
