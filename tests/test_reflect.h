@@ -263,3 +263,47 @@ TEST_CASE("ComplexTypes struct reflection", "[reflection]")
         REQUIRE(nest_levels == std::vector<int>(8, 0));
     }
 }
+
+TEST_CASE("ContainsNotReflected struct reflection", "[reflection]")
+{
+    ContainsNotReflected obj;
+    obj.notReflectedStruct.xValue = 100;
+    obj.notReflectedStruct.yValue = 200.5f;
+
+    SECTION("Class name")
+    {
+        REQUIRE(ReflectionLibrary::get_class_name(obj) == "ContainsNotReflected");
+    }
+
+    SECTION("Field count")
+    {
+        REQUIRE(ReflectionLibrary::get_field_count(obj) == 2);
+    }
+
+    SECTION("Set field value")
+    {
+        ReflectionLibrary::set_field_value(obj, "aValue", 150);
+        REQUIRE(obj.notReflectedStruct.xValue == 150);
+        ReflectionLibrary::set_field_value(obj, "bValue", 250.5f);
+        REQUIRE(obj.notReflectedStruct.yValue == 250.5f);
+    }
+
+    SECTION("Field values")
+    {
+        REQUIRE(obj.notReflectedStruct.xValue == 100);
+        REQUIRE(obj.notReflectedStruct.yValue == 200.5f);
+    }
+
+    SECTION("Field iteration")
+    {
+        std::vector<std::string> names;
+        std::vector<int> nest_levels;
+        ReflectionLibrary::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
+                                          {
+            names.push_back(std::string(name));
+            nest_levels.push_back(nest_level); });
+        REQUIRE(names.size() == 2);
+        REQUIRE(names == std::vector<std::string>{"aValue", "bValue"});
+        REQUIRE(nest_levels == std::vector<int>{0, 0}); // All top-level fields
+    }
+}

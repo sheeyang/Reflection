@@ -177,6 +177,33 @@ TEST_CASE("JSON serialize/deserialize NestedComplex struct", "[json]")
     }
 }
 
+TEST_CASE("JSON serialize/deserialize ContainsNotReflected struct", "[json]")
+{
+    ContainsNotReflected original;
+    original.notReflectedStruct.xValue = 100;
+    original.notReflectedStruct.yValue = 200.5f;
+
+    SECTION("Serialize")
+    {
+        std::string json = ReflectionLibrary::to_json(original);
+        REQUIRE_FALSE(json.empty());
+        REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("aValue"));
+        REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("100"));
+        REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("bValue"));
+        REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("200.5"));
+    }
+
+    SECTION("Roundtrip")
+    {
+        std::string json = ReflectionLibrary::to_json(original);
+        auto result = ReflectionLibrary::from_json<ContainsNotReflected>(json);
+
+        REQUIRE(result.has_value());
+        REQUIRE(result->notReflectedStruct.xValue == 100);
+        REQUIRE(result->notReflectedStruct.yValue == Catch::Approx(200.5f));
+    }
+}
+
 TEST_CASE("JSON error handling", "[json]")
 {
     SECTION("Invalid JSON")
