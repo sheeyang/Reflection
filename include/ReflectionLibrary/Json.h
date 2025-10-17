@@ -217,8 +217,11 @@ namespace ReflectionLibrary
                 } });
             return success;
         }
-
-        return true;
+        else
+        {
+            // Fallback for unsupported types
+            return false;
+        }
     }
 
     // Serialize object to JSON value
