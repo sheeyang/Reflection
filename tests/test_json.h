@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../include/Reflex.h"
-#include "../include/Reflex/Json.h"
+#include "../include/ReflectionLibrary.h"
+#include "../include/ReflectionLibrary/Json.h"
 #include "types.h"
 #include <catch2/catch_all.hpp>
 
@@ -11,7 +11,7 @@ TEST_CASE("JSON serialize/deserialize Simple struct", "[json]")
 
     SECTION("Serialize")
     {
-        std::string json = Reflex::to_json(original);
+        std::string json = ReflectionLibrary::to_json(original);
         REQUIRE_FALSE(json.empty());
         REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("integerValue"));
         REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("42"));
@@ -19,8 +19,8 @@ TEST_CASE("JSON serialize/deserialize Simple struct", "[json]")
 
     SECTION("Roundtrip")
     {
-        std::string json = Reflex::to_json(original);
-        auto result = Reflex::from_json<Simple>(json);
+        std::string json = ReflectionLibrary::to_json(original);
+        auto result = ReflectionLibrary::from_json<Simple>(json);
 
         REQUIRE(result.has_value());
         REQUIRE(result->integerValue == 42);
@@ -38,8 +38,8 @@ TEST_CASE("JSON serialize/deserialize AllPrimitiveTypes struct", "[json]")
 
     SECTION("Roundtrip")
     {
-        std::string json = Reflex::to_json(original);
-        auto result = Reflex::from_json<AllPrimitiveTypes>(json);
+        std::string json = ReflectionLibrary::to_json(original);
+        auto result = ReflectionLibrary::from_json<AllPrimitiveTypes>(json);
 
         REQUIRE(result.has_value());
         REQUIRE(result->booleanValue == true);
@@ -68,8 +68,8 @@ TEST_CASE("JSON serialize/deserialize Nested struct", "[json]")
 
     SECTION("Roundtrip")
     {
-        std::string json = Reflex::to_json(original);
-        auto result = Reflex::from_json<Nested>(json);
+        std::string json = ReflectionLibrary::to_json(original);
+        auto result = ReflectionLibrary::from_json<Nested>(json);
 
         REQUIRE(result.has_value());
         REQUIRE(result->count == 123);
@@ -90,8 +90,8 @@ TEST_CASE("JSON serialize/deserialize DeeplyNested struct", "[json]")
 
     SECTION("Roundtrip")
     {
-        std::string json = Reflex::to_json(original);
-        auto result = Reflex::from_json<DeeplyNested>(json);
+        std::string json = ReflectionLibrary::to_json(original);
+        auto result = ReflectionLibrary::from_json<DeeplyNested>(json);
 
         REQUIRE(result.has_value());
         REQUIRE(result->nestedStruct.count == 456);
@@ -117,15 +117,15 @@ TEST_CASE("JSON serialize/deserialize ComplexTypes struct", "[json]")
 
     SECTION("Serialize")
     {
-        std::string json = Reflex::to_json(original);
+        std::string json = ReflectionLibrary::to_json(original);
         REQUIRE_FALSE(json.empty());
         REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("Hello, World!"));
     }
 
     SECTION("Roundtrip")
     {
-        std::string json = Reflex::to_json(original);
-        auto result = Reflex::from_json<ComplexTypes>(json);
+        std::string json = ReflectionLibrary::to_json(original);
+        auto result = ReflectionLibrary::from_json<ComplexTypes>(json);
 
         REQUIRE(result.has_value());
         REQUIRE(result->stringValue == "Hello, World!");
@@ -159,8 +159,8 @@ TEST_CASE("JSON serialize/deserialize NestedComplex struct", "[json]")
 
     SECTION("Roundtrip")
     {
-        std::string json = Reflex::to_json(original);
-        auto result = Reflex::from_json<NestedComplex>(json);
+        std::string json = ReflectionLibrary::to_json(original);
+        auto result = ReflectionLibrary::from_json<NestedComplex>(json);
 
         REQUIRE(result.has_value());
         REQUIRE(result->vectorOfVectors.size() == 2);
@@ -182,21 +182,21 @@ TEST_CASE("JSON error handling", "[json]")
     SECTION("Invalid JSON")
     {
         std::string invalid_json = "{ invalid json }";
-        auto result = Reflex::from_json<Simple>(invalid_json);
+        auto result = ReflectionLibrary::from_json<Simple>(invalid_json);
         REQUIRE_FALSE(result.has_value());
     }
 
     SECTION("Empty JSON")
     {
         std::string empty_json = "";
-        auto result = Reflex::from_json<Simple>(empty_json);
+        auto result = ReflectionLibrary::from_json<Simple>(empty_json);
         REQUIRE_FALSE(result.has_value());
     }
 
     SECTION("Wrong type in JSON")
     {
         std::string json = R"({"integerValue": "not_a_number", "floatValue": 3.14, "doubleValue": 2.71})";
-        auto result = Reflex::from_json<Simple>(json);
+        auto result = ReflectionLibrary::from_json<Simple>(json);
         // Should fail due to type mismatch
         REQUIRE_FALSE(result.has_value());
     }
@@ -204,7 +204,7 @@ TEST_CASE("JSON error handling", "[json]")
     SECTION("Missing fields")
     {
         std::string json = R"({"integerValue": 42})";
-        auto result = Reflex::from_json<Simple>(json);
+        auto result = ReflectionLibrary::from_json<Simple>(json);
         // Should succeed with default values for missing fields
         REQUIRE(result.has_value());
         REQUIRE(result->integerValue == 42);
@@ -220,8 +220,8 @@ TEST_CASE("JSON edge cases", "[json]")
         ComplexTypes obj;
         obj.stringValue = "";
 
-        std::string json = Reflex::to_json(obj);
-        auto result = Reflex::from_json<ComplexTypes>(json);
+        std::string json = ReflectionLibrary::to_json(obj);
+        auto result = ReflectionLibrary::from_json<ComplexTypes>(json);
 
         REQUIRE(result.has_value());
         REQUIRE(result->stringValue == "");
@@ -234,8 +234,8 @@ TEST_CASE("JSON edge cases", "[json]")
         obj.doubleList.clear();
         obj.stringFloatMap.clear();
 
-        std::string json = Reflex::to_json(obj);
-        auto result = Reflex::from_json<ComplexTypes>(json);
+        std::string json = ReflectionLibrary::to_json(obj);
+        auto result = ReflectionLibrary::from_json<ComplexTypes>(json);
 
         REQUIRE(result.has_value());
         REQUIRE(result->intVector.empty());
@@ -251,11 +251,11 @@ TEST_CASE("JSON edge cases", "[json]")
         AllPrimitiveTypes obj_false;
         obj_false.booleanValue = false;
 
-        std::string json_true = Reflex::to_json(obj_true);
-        std::string json_false = Reflex::to_json(obj_false);
+        std::string json_true = ReflectionLibrary::to_json(obj_true);
+        std::string json_false = ReflectionLibrary::to_json(obj_false);
 
-        auto result_true = Reflex::from_json<AllPrimitiveTypes>(json_true);
-        auto result_false = Reflex::from_json<AllPrimitiveTypes>(json_false);
+        auto result_true = ReflectionLibrary::from_json<AllPrimitiveTypes>(json_true);
+        auto result_false = ReflectionLibrary::from_json<AllPrimitiveTypes>(json_false);
 
         REQUIRE(result_true.has_value());
         REQUIRE(result_true->booleanValue == true);
@@ -268,8 +268,8 @@ TEST_CASE("JSON edge cases", "[json]")
         ComplexTypes obj;
         obj.stringValue = "Test\n\t\"quotes\"\\backslash";
 
-        std::string json = Reflex::to_json(obj);
-        auto result = Reflex::from_json<ComplexTypes>(json);
+        std::string json = ReflectionLibrary::to_json(obj);
+        auto result = ReflectionLibrary::from_json<ComplexTypes>(json);
 
         REQUIRE(result.has_value());
         REQUIRE(result->stringValue == "Test\n\t\"quotes\"\\backslash");

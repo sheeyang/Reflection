@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <optional>
 
-namespace Reflex
+namespace ReflectionLibrary
 {
     // Serialize value to JSON
     template <typename T>
@@ -277,4 +277,4 @@ namespace Reflex
         return obj;
     }
 
-} // namespace Reflex
+} // namespace ReflectionLibrary

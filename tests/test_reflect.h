@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../include/Reflex.h"
+#include "../include/ReflectionLibrary.h"
 #include "types.h"
 #include <catch2/catch_all.hpp>
 
@@ -10,19 +10,19 @@ TEST_CASE("Simple struct reflection", "[reflection]")
 
     SECTION("Class name")
     {
-        REQUIRE(Reflex::class_name<Simple> == std::string("Simple"));
-        REQUIRE(Reflex::get_class_name(obj) == "Simple");
+        REQUIRE(ReflectionLibrary::class_name<Simple> == std::string("Simple"));
+        REQUIRE(ReflectionLibrary::get_class_name(obj) == "Simple");
     }
 
     SECTION("Field count")
     {
-        REQUIRE(Reflex::field_count<Simple> == 3);
-        REQUIRE(Reflex::get_field_count(obj) == 3);
+        REQUIRE(ReflectionLibrary::field_count<Simple> == 3);
+        REQUIRE(ReflectionLibrary::get_field_count(obj) == 3);
     }
 
     SECTION("Set field value")
     {
-        Reflex::set_field_value(obj, "integerValue", 100);
+        ReflectionLibrary::set_field_value(obj, "integerValue", 100);
         REQUIRE(obj.integerValue == 100);
     }
 
@@ -37,8 +37,8 @@ TEST_CASE("Simple struct reflection", "[reflection]")
     {
         std::vector<std::string> names;
         std::vector<int> nest_levels;
-        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
-                               {
+        ReflectionLibrary::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
+                                          {
                                    names.push_back(std::string(name));
                                    nest_levels.push_back(nest_level); });
         REQUIRE(names.size() == 3);
@@ -56,20 +56,20 @@ TEST_CASE("AllPrimitiveTypes struct reflection", "[reflection]")
 
     SECTION("Class name")
     {
-        REQUIRE(Reflex::get_class_name(obj) == "AllPrimitiveTypes");
+        REQUIRE(ReflectionLibrary::get_class_name(obj) == "AllPrimitiveTypes");
     }
 
     SECTION("Field count")
     {
-        REQUIRE(Reflex::get_field_count(obj) == 14);
+        REQUIRE(ReflectionLibrary::get_field_count(obj) == 14);
     }
 
     SECTION("Field iteration")
     {
         std::vector<std::string> names;
         std::vector<int> nest_levels;
-        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
-                               { 
+        ReflectionLibrary::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
+                                          { 
                                    names.push_back(std::string(name)); 
                                    nest_levels.push_back(nest_level); });
         REQUIRE(names.size() == 14);
@@ -105,12 +105,12 @@ TEST_CASE("Nested struct reflection", "[reflection]")
 
     SECTION("Class name")
     {
-        REQUIRE(Reflex::get_class_name(obj) == "Nested");
+        REQUIRE(ReflectionLibrary::get_class_name(obj) == "Nested");
     }
 
     SECTION("Field count")
     {
-        REQUIRE(Reflex::get_field_count(obj) == 3);
+        REQUIRE(ReflectionLibrary::get_field_count(obj) == 3);
     }
 
     SECTION("Field iteration")
@@ -118,8 +118,8 @@ TEST_CASE("Nested struct reflection", "[reflection]")
         int i = 0;
         std::vector<std::string> names;
         std::vector<int> nest_levels;
-        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
-                               { 
+        ReflectionLibrary::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
+                                          { 
                                    names.push_back(std::string(name)); 
                                    nest_levels.push_back(nest_level);
                                    i++; });
@@ -158,12 +158,12 @@ TEST_CASE("DeeplyNested struct reflection", "[reflection]")
 
     SECTION("Class name")
     {
-        REQUIRE(Reflex::get_class_name(obj) == "DeeplyNested");
+        REQUIRE(ReflectionLibrary::get_class_name(obj) == "DeeplyNested");
     }
 
     SECTION("Field count")
     {
-        REQUIRE(Reflex::get_field_count(obj) == 2);
+        REQUIRE(ReflectionLibrary::get_field_count(obj) == 2);
     }
 
     SECTION("Field iteration")
@@ -171,8 +171,8 @@ TEST_CASE("DeeplyNested struct reflection", "[reflection]")
         int i = 0;
         std::vector<std::string> names;
         std::vector<int> nest_levels;
-        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
-                               { 
+        ReflectionLibrary::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
+                                          { 
                                    names.push_back(std::string(name)); 
                                    nest_levels.push_back(nest_level);
                                    i++; });
@@ -222,17 +222,17 @@ TEST_CASE("ComplexTypes struct reflection", "[reflection]")
 
     SECTION("Class name")
     {
-        REQUIRE(Reflex::get_class_name(obj) == "ComplexTypes");
+        REQUIRE(ReflectionLibrary::get_class_name(obj) == "ComplexTypes");
     }
 
     SECTION("Field count")
     {
-        REQUIRE(Reflex::get_field_count(obj) == 8);
+        REQUIRE(ReflectionLibrary::get_field_count(obj) == 8);
     }
 
     SECTION("Set field value")
     {
-        Reflex::set_field_value(obj, "stringValue", std::string("Goodbye, World."));
+        ReflectionLibrary::set_field_value(obj, "stringValue", std::string("Goodbye, World."));
         REQUIRE(obj.stringValue == "Goodbye, World.");
     }
 
@@ -252,8 +252,8 @@ TEST_CASE("ComplexTypes struct reflection", "[reflection]")
     {
         std::vector<std::string> names;
         std::vector<int> nest_levels;
-        Reflex::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
-                               { 
+        ReflectionLibrary::for_each_field(obj, [&](std::string_view name, auto &value, int nest_level)
+                                          { 
                                    names.push_back(std::string(name)); 
                                    nest_levels.push_back(nest_level); });
         REQUIRE(names.size() == 8);

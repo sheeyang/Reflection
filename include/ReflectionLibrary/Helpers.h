@@ -3,7 +3,7 @@
 #include <string_view>
 #include <tuple>
 
-namespace Reflex
+namespace ReflectionLibrary
 {
     template <typename T>
     static constexpr std::string_view class_name = ReflectionInfo<T>::class_name;
@@ -73,4 +73,4 @@ namespace Reflex
         }
     }
 
-} // namespace Reflex
+} // namespace ReflectionLibrary

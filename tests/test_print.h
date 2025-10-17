@@ -1,4 +1,4 @@
-#include "../include/Reflex.h"
+#include "../include/ReflectionLibrary.h"
 #include "types.h"
 #include <catch2/catch_all.hpp>
 #include <sstream>
@@ -33,7 +33,7 @@ TEST_CASE("Print Simple struct", "[print]")
   Simple obj{42, 3.14f, 2.71};
 
   CaptureStdout capture;
-  Reflex::print(obj);
+  ReflectionLibrary::print(obj);
   std::string output = capture.get_output();
 
   std::string expected = R"(Type: Simple
@@ -53,7 +53,7 @@ TEST_CASE("Print AllPrimitiveTypes struct", "[print]")
       1.23f, 4.56, 7.89L};
 
   CaptureStdout capture;
-  Reflex::print(obj);
+  ReflectionLibrary::print(obj);
   std::string output = capture.get_output();
 
   std::string expected = R"(Type: AllPrimitiveTypes
@@ -81,7 +81,7 @@ TEST_CASE("Print Nested struct", "[print]")
   Nested obj{123, {1, 2.0f, 3.0}, {true, 'C', 456, 789, 101112L, 131415LL, 'D', 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L}};
 
   CaptureStdout capture;
-  Reflex::print(obj);
+  ReflectionLibrary::print(obj);
   std::string output = capture.get_output();
 
   std::string expected = R"(Type: Nested
@@ -115,7 +115,7 @@ TEST_CASE("Print DeeplyNested struct", "[print]")
   DeeplyNested obj{{456, {4, 5.0f, 6.0}, {false, 'D', 789, 101112, 131415L, 161718LL, 'E', 50000, 6000000, 70000000UL, 8000000000ULL, 3.45f, 6.78, 9.01L}}, {7, 8.0f, 9.0}};
 
   CaptureStdout capture;
-  Reflex::print(obj);
+  ReflectionLibrary::print(obj);
   std::string output = capture.get_output();
 
   std::string expected = R"(Type: DeeplyNested
@@ -162,7 +162,7 @@ TEST_CASE("Print ComplexTypes struct", "[print]")
       {100, 200.0f, "three hundred"}};
 
   CaptureStdout capture;
-  Reflex::print(obj);
+  ReflectionLibrary::print(obj);
   std::string output = capture.get_output();
 
   std::string expected = R"(Type: ComplexTypes
@@ -232,7 +232,7 @@ TEST_CASE("Print NestedComplex struct", "[print]")
       {{{Simple{10, 1.0f, 2.0}, Simple{20, 3.0f, 4.0}}, {Simple{30, 5.0f, 6.0}}}}};
 
   CaptureStdout capture;
-  Reflex::print(obj);
+  ReflectionLibrary::print(obj);
   std::string output = capture.get_output();
 
   std::string expected = R"(Type: NestedComplex
@@ -289,7 +289,7 @@ TEST_CASE("Print ContainsNotReflected struct", "[print]")
   obj.notReflectedStruct.yValue = 200.5f;
 
   CaptureStdout capture;
-  Reflex::print(obj);
+  ReflectionLibrary::print(obj);
   std::string output = capture.get_output();
 
   std::string expected = R"(Type: ContainsNotReflected

@@ -4,7 +4,7 @@
 #include <string_view>
 #include <iostream>
 
-namespace Reflex
+namespace ReflectionLibrary
 {
     template <typename T>
     static void print_value(std::string_view name, T &value, int nest_level)
@@ -76,4 +76,4 @@ namespace Reflex
         for_each_field(obj, [](std::string_view name, auto &value, int nest_level)
                        { print_value(name, value, nest_level); }, 0);
     }
-} // namespace Reflex
+} // namespace ReflectionLibrary
