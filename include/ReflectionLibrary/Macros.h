@@ -46,6 +46,7 @@
     };
 
 #define REFLECT_CUSTOM(CLASS_NAME, ...)                                                                                             \
+    REFLECT_FIELDS(CLASS_NAME::Reflector, __VA_ARGS__)                                                                              \
     template <>                                                                                                                     \
     struct ReflectionLibrary::ReflectionInfo<CLASS_NAME>                                                                            \
     {                                                                                                                               \
