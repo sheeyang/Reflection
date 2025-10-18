@@ -1,32 +1,27 @@
 #pragma once
 
+#include <string>
 #include <string_view>
 #include <optional>
+#include <unordered_map>
+#include "Json.h"
 
 namespace ReflectionLibrary
 {
 
     struct IDeserializer
     {
-        virtual bool deserialize(void *obj, const Value &value) const = 0;
+        virtual bool deserialize(const std::string &json_str) const = 0;
     };
 
     inline static std::unordered_map<std::string, IDeserializer> deserializer_registry;
-
-    template <typename T>
-    struct TDeserializer : public IDeserializer
-    {
-        std::optional<T> deserialize(const std::string &json_str) const override
-        {
-            return ReflectionLibrary::from_json<T>(json_str);
-        }
-    };
 
     template <typename T>
     void add_deserializer(std::string_view name)
     {
         ReflectionLibrary::deserializer_registry[name] = TDeserializer<T>();
     }
+
 } // namespace ReflectionLibrary
 
 // Count arguments (supports up to 20)
@@ -72,8 +67,13 @@ namespace ReflectionLibrary
         static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
     };                                                                                                                               \
     template <typename T>                                                                                                            \
-    struct TDeserializer : public IDeserializer                                                                                      \
+    struct TDeserializer : public ReflectionLibrary::IDeserializer                                                                   \
     {                                                                                                                                \
+        TDeserializer()                                                                                                              \
+        {                                                                                                                            \
+            static TDeserializer instance = TDeserializer<T>();                                                                      \
+            ReflectionLibrary::deserializer_registry[#CLASS_NAME] = instance;                                                        \
+        }                                                                                                                            \
         std::optional<T> deserialize(const std::string &json_str) const override                                                     \
         {                                                                                                                            \
             return ReflectionLibrary::from_json<T>(json_str);                                                                        \

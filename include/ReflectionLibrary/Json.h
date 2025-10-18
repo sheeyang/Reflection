@@ -7,6 +7,7 @@
 #include <string>
 #include <type_traits>
 #include <optional>
+#include "Concepts.h"
 
 namespace ReflectionLibrary
 {
