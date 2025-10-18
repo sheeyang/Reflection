@@ -31,4 +31,9 @@ namespace ReflectionLibrary
   template <typename T>
   concept is_iterable_v = requires(T value) { value.size(); value.begin(); value.end(); };
 
+  template <typename T>
+  concept has_reflector_v = requires {
+    typename T::Reflector;
+  };
+
 }
