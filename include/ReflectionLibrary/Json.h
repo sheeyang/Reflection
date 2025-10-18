@@ -115,6 +115,7 @@ namespace ReflectionLibrary
             if (!json_val.IsBool())
                 return false;
             value = json_val.GetBool();
+            return true;
         }
         else if constexpr (std::is_integral_v<ValueType> && std::is_signed_v<ValueType>)
         {
@@ -124,6 +125,7 @@ namespace ReflectionLibrary
                 value = static_cast<ValueType>(json_val.GetInt());
             else
                 return false;
+            return true;
         }
         else if constexpr (std::is_integral_v<ValueType> && std::is_unsigned_v<ValueType>)
         {
@@ -133,6 +135,7 @@ namespace ReflectionLibrary
                 value = static_cast<ValueType>(json_val.GetUint());
             else
                 return false;
+            return true;
         }
         else if constexpr (std::is_floating_point_v<ValueType>)
         {
@@ -142,12 +145,14 @@ namespace ReflectionLibrary
                 value = static_cast<ValueType>(json_val.GetInt());
             else
                 return false;
+            return true;
         }
         else if constexpr (std::is_same_v<ValueType, std::string>)
         {
             if (!json_val.IsString())
                 return false;
             value = json_val.GetString();
+            return true;
         }
         else if constexpr (is_pair_v<ValueType>)
         {
@@ -157,6 +162,7 @@ namespace ReflectionLibrary
                 return false;
             if (json_val.HasMember("second") && !deserialize_value(value.second, json_val["second"]))
                 return false;
+            return true;
         }
         else if constexpr (is_tuple_v<ValueType>)
         {
@@ -202,6 +208,7 @@ namespace ReflectionLibrary
                     value.insert(value.end(), std::move(elem));
                 }
             }
+            return true;
         }
         else if constexpr (is_reflectable_v<ValueType>)
         {
