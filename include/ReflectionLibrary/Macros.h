@@ -17,10 +17,15 @@ namespace ReflectionLibrary
     inline static std::unordered_map<std::string, IDeserializer> deserializer_registry;
 
     template <typename T>
-    void add_deserializer(std::string_view name)
+    struct RegisterDeserializer
     {
-        ReflectionLibrary::deserializer_registry[name] = TDeserializer<T>();
-    }
+        RegisterDeserializer(const std::string &key)
+        {
+            // The registry should store a dynamically allocated instance
+            // to avoid lifetime issues.
+            deserializer_registry[key] = new TDeserializer<T>();
+        }
+    };
 
 } // namespace ReflectionLibrary
 
@@ -69,16 +74,17 @@ namespace ReflectionLibrary
     template <typename T>                                                                                                            \
     struct TDeserializer : public ReflectionLibrary::IDeserializer                                                                   \
     {                                                                                                                                \
-        TDeserializer()                                                                                                              \
-        {                                                                                                                            \
-            static TDeserializer instance = TDeserializer<T>();                                                                      \
-            ReflectionLibrary::deserializer_registry[#CLASS_NAME] = instance;                                                        \
-        }                                                                                                                            \
         std::optional<T> deserialize(const std::string &json_str) const override                                                     \
         {                                                                                                                            \
             return ReflectionLibrary::from_json<T>(json_str);                                                                        \
         }                                                                                                                            \
-    };
+    };                                                                                                                               \
+    template <>                                                                                                                      \
+    std::optional<CLASS_NAME> from_json<CLASS_NAME>(const std::string &json_str)                                                     \
+    {                                                                                                                                \
+        return ReflectionLibrary::from_json<CLASS_NAME>(json_str);                                                                   \
+    }                                                                                                                                \
+    ReflectionLibrary::RegisterDeserializer<CLASS_NAME> CLASS_NAME##_deserializer(KEY);
 
 #define REFLECT_CUSTOM(CLASS_NAME, ...)                                   \
     REFLECT_FIELDS(CLASS_NAME::Reflector, __VA_ARGS__)                    \
