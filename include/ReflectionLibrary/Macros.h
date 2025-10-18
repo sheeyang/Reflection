@@ -1,5 +1,34 @@
 #pragma once
 
+#include <string_view>
+#include <optional>
+
+namespace ReflectionLibrary
+{
+
+    struct IDeserializer
+    {
+        virtual bool deserialize(void *obj, const Value &value) const = 0;
+    };
+
+    inline static std::unordered_map<std::string, IDeserializer> deserializer_registry;
+
+    template <typename T>
+    struct TDeserializer : public IDeserializer
+    {
+        std::optional<T> deserialize(const std::string &json_str) const override
+        {
+            return ReflectionLibrary::from_json<T>(json_str);
+        }
+    };
+
+    template <typename T>
+    void add_deserializer(std::string_view name)
+    {
+        ReflectionLibrary::deserializer_registry[name] = TDeserializer<T>();
+    }
+} // namespace ReflectionLibrary
+
 // Count arguments (supports up to 20)
 #define COUNT_ARGS(...) COUNT_ARGS_IMPL(__VA_ARGS__, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
 #define COUNT_ARGS_IMPL(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, N, ...) N
@@ -41,7 +70,13 @@
     {                                                                                                                                \
         static constexpr const char *class_name = #CLASS_NAME;                                                                       \
         static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
-    };
+    };                                                                                                                               \
+    deserializer_registry[#CLASS_NAME] = ReflectionLibrary::IDeserializer{                                                           \
+        bool deserialize(void *obj, const ReflectionLibrary::Value &value) const override{                                           \
+            return ReflectionLibrary::from_value(*(CLASS_NAME *)obj, value);                                                         \
+    }                                                                                                                                \
+    }                                                                                                                                \
+    ;
 
 #define REFLECT_CUSTOM(CLASS_NAME, ...)                                   \
     REFLECT_FIELDS(CLASS_NAME::Reflector, __VA_ARGS__)                    \
