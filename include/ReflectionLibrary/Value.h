@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <sstream>
+#include <optional>
 #include "ReflectionLibrary/Concepts.h"
 #include "ReflectionLibrary/Helpers.h"
 
@@ -178,9 +179,15 @@ namespace ReflectionLibrary
     template <typename T>
     bool from_value(T &obj, const Value &value);
 
-    // Convenience function to convert from Value (returns optional-like behavior)
+    // Convenience function to convert from Value
     template <typename T>
     T from_value(const Value &value);
+
+    // Convert Value to JSON string
+    std::string value_to_json(const Value& value, bool pretty = true);
+    
+    // Convert JSON string to Value
+    std::optional<Value> value_from_json(const std::string& json_str);
 
 } // namespace ReflectionLibrary
 

@@ -1,6 +1,10 @@
 #pragma once
 
 #include "Value.h"
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
 
 namespace ReflectionLibrary
 {
@@ -620,6 +624,147 @@ namespace ReflectionLibrary
             throw std::runtime_error("Failed to convert Value to target type");
         }
         return result;
+    }
+
+    // Helper function to convert Value to RapidJSON Value
+    static void value_to_rapidjson(const Value &value, rapidjson::Value &json_val, rapidjson::Document::AllocatorType &allocator)
+    {
+        if (value.isNull())
+        {
+            json_val.SetNull();
+        }
+        else if (value.isBool())
+        {
+            json_val.SetBool(value.getBool());
+        }
+        else if (value.isInt())
+        {
+            json_val.SetInt64(value.getInt());
+        }
+        else if (value.isDouble())
+        {
+            json_val.SetDouble(value.getDouble());
+        }
+        else if (value.isString())
+        {
+            const auto &str = value.getString();
+            json_val.SetString(str.c_str(), static_cast<rapidjson::SizeType>(str.length()), allocator);
+        }
+        else if (value.isArray())
+        {
+            json_val.SetArray();
+            const auto &arr = value.getArray();
+            for (const auto &elem : arr)
+            {
+                rapidjson::Value elem_val;
+                value_to_rapidjson(elem, elem_val, allocator);
+                json_val.PushBack(elem_val, allocator);
+            }
+        }
+        else if (value.isObject())
+        {
+            json_val.SetObject();
+            const auto &obj = value.getObject();
+            for (const auto &[key, val] : obj)
+            {
+                rapidjson::Value key_val(key.c_str(), static_cast<rapidjson::SizeType>(key.length()), allocator);
+                rapidjson::Value val_json;
+                value_to_rapidjson(val, val_json, allocator);
+                json_val.AddMember(key_val, val_json, allocator);
+            }
+        }
+    }
+
+    // Helper function to convert RapidJSON Value to Value
+    static Value rapidjson_to_value(const rapidjson::Value &json_val)
+    {
+        if (json_val.IsNull())
+        {
+            return Value();
+        }
+        else if (json_val.IsBool())
+        {
+            return Value(json_val.GetBool());
+        }
+        else if (json_val.IsInt64())
+        {
+            return Value(json_val.GetInt64());
+        }
+        else if (json_val.IsInt())
+        {
+            return Value(static_cast<int64_t>(json_val.GetInt()));
+        }
+        else if (json_val.IsUint64())
+        {
+            return Value(static_cast<int64_t>(json_val.GetUint64()));
+        }
+        else if (json_val.IsUint())
+        {
+            return Value(static_cast<int64_t>(json_val.GetUint()));
+        }
+        else if (json_val.IsDouble())
+        {
+            return Value(json_val.GetDouble());
+        }
+        else if (json_val.IsString())
+        {
+            return Value(std::string(json_val.GetString()));
+        }
+        else if (json_val.IsArray())
+        {
+            Array arr;
+            for (auto it = json_val.Begin(); it != json_val.End(); ++it)
+            {
+                arr.push_back(rapidjson_to_value(*it));
+            }
+            return Value(std::move(arr));
+        }
+        else if (json_val.IsObject())
+        {
+            Object obj;
+            for (auto it = json_val.MemberBegin(); it != json_val.MemberEnd(); ++it)
+            {
+                obj[it->name.GetString()] = rapidjson_to_value(it->value);
+            }
+            return Value(std::move(obj));
+        }
+
+        return Value();
+    }
+
+    std::string value_to_json(const Value &value, bool pretty)
+    {
+        rapidjson::Document doc;
+        auto &allocator = doc.GetAllocator();
+
+        value_to_rapidjson(value, doc, allocator);
+
+        rapidjson::StringBuffer buffer;
+        if (pretty)
+        {
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+            doc.Accept(writer);
+        }
+        else
+        {
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            doc.Accept(writer);
+        }
+
+        return buffer.GetString();
+    }
+
+    std::optional<Value> value_from_json(const std::string &json_str)
+    {
+        rapidjson::Document doc;
+        doc.Parse(json_str.c_str());
+
+        if (doc.HasParseError())
+        {
+            return std::nullopt;
+        }
+
+        return rapidjson_to_value(doc);
     }
 
 } // namespace ReflectionLibrary
