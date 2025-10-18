@@ -8,8 +8,8 @@
 #include <type_traits>
 #include <sstream>
 #include <optional>
-#include "ReflectionLibrary/Concepts.h"
-#include "ReflectionLibrary/Helpers.h"
+#include "Concepts.h"
+#include "Helpers.h"
 
 namespace ReflectionLibrary
 {
