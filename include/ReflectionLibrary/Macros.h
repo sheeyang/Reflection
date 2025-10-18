@@ -71,12 +71,14 @@ namespace ReflectionLibrary
         static constexpr const char *class_name = #CLASS_NAME;                                                                       \
         static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
     };                                                                                                                               \
-    deserializer_registry[#CLASS_NAME] = ReflectionLibrary::IDeserializer{                                                           \
-        bool deserialize(void *obj, const ReflectionLibrary::Value &value) const override{                                           \
-            return ReflectionLibrary::from_value(*(CLASS_NAME *)obj, value);                                                         \
-    }                                                                                                                                \
-    }                                                                                                                                \
-    ;
+    template <typename T>                                                                                                            \
+    struct TDeserializer : public IDeserializer                                                                                      \
+    {                                                                                                                                \
+        std::optional<T> deserialize(const std::string &json_str) const override                                                     \
+        {                                                                                                                            \
+            return ReflectionLibrary::from_json<T>(json_str);                                                                        \
+        }                                                                                                                            \
+    };
 
 #define REFLECT_CUSTOM(CLASS_NAME, ...)                                   \
     REFLECT_FIELDS(CLASS_NAME::Reflector, __VA_ARGS__)                    \
