@@ -21,7 +21,7 @@ namespace ReflectionLibrary
     struct IDeserializer
     {
         virtual ~IDeserializer() = default;
-        virtual int deserialize(const std::string &json_str) const = 0;
+        virtual int deserialize(const std::string &json_str) = 0;
         virtual void visit(int index, std::function<void(const void *)> visitor) const = 0;
     };
 
@@ -33,19 +33,23 @@ namespace ReflectionLibrary
     {
         std::unordered_map<int, T> deserialized_objects;
 
-        int deserialize(const std::string &json_str) const override
+        int deserialize(const std::string &json_str) override
         {
             int index = deserialized_objects.size();
-            deserialized_objects[index] = from_json<T>(json_str);
+            auto result = from_json<T>(json_str);
+            if (result.has_value())
+            {
+                deserialized_objects[index] = std::move(result.value());
+            }
             return index;
         }
 
-        void visit(int index, std::function<void(const T &)> visitor) const
+        void visit(int index, std::function<void(const void *)> visitor) const override
         {
             auto it = deserialized_objects.find(index);
             if (it != deserialized_objects.end())
             {
-                visitor(it->second);
+                visitor(static_cast<const void *>(&it->second));
             }
         }
     };
