@@ -4,26 +4,54 @@
 #include <string_view>
 #include <optional>
 #include <unordered_map>
+#include <memory>
+#include <utility>
 #include "Json.h"
 
 namespace ReflectionLibrary
 {
+    // Forward declarations
+    template <typename T>
+    struct ReflectionInfo;
+
+    template <typename T>
+    std::optional<T> from_json(const std::string &json_str);
+
+    struct DeserializeInfo
+    {
+        std::string type;
+        int index;
+    };
 
     struct IDeserializer
     {
-        virtual bool deserialize(const std::string &json_str) const = 0;
+        virtual ~IDeserializer() = default;
+        virtual DeserializeInfo deserialize(const std::string &json_str) const = 0;
     };
 
-    inline static std::unordered_map<std::string, IDeserializer> deserializer_registry;
+    inline static std::unordered_map<std::string, std::unique_ptr<IDeserializer>> deserializer_registry;
 
+    // TDeserializer template defined once at namespace scope
+    template <typename T>
+    struct TDeserializer : public IDeserializer
+    {
+        std::unordered_map<int, T> deserialized_objects;
+
+        DeserializeInfo deserialize(const std::string &json_str) const override
+        {
+            int index = deserialized_objects.size();
+            deserialized_objects[index] = from_json<T>(json_str);
+            return {get_class_name<T>(), index};
+        }
+    };
+
+    // RegisterDeserializer template defined once at namespace scope
     template <typename T>
     struct RegisterDeserializer
     {
         RegisterDeserializer(const std::string &key)
         {
-            // The registry should store a dynamically allocated instance
-            // to avoid lifetime issues.
-            deserializer_registry[key] = new TDeserializer<T>();
+            deserializer_registry[key] = std::make_unique<TDeserializer<T>>();
         }
     };
 
@@ -71,20 +99,12 @@ namespace ReflectionLibrary
         static constexpr const char *class_name = #CLASS_NAME;                                                                       \
         static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
     };                                                                                                                               \
-    template <typename T>                                                                                                            \
-    struct TDeserializer : public ReflectionLibrary::IDeserializer                                                                   \
-    {                                                                                                                                \
-        std::optional<T> deserialize(const std::string &json_str) const override                                                     \
-        {                                                                                                                            \
-            return ReflectionLibrary::from_json<T>(json_str);                                                                        \
-        }                                                                                                                            \
-    };                                                                                                                               \
     template <>                                                                                                                      \
-    std::optional<CLASS_NAME> from_json<CLASS_NAME>(const std::string &json_str)                                                     \
+    std::optional<CLASS_NAME> ReflectionLibrary::from_json<CLASS_NAME>(const std::string &json_str)                                  \
     {                                                                                                                                \
         return ReflectionLibrary::from_json<CLASS_NAME>(json_str);                                                                   \
     }                                                                                                                                \
-    ReflectionLibrary::RegisterDeserializer<CLASS_NAME> CLASS_NAME##_deserializer(KEY);
+    static ReflectionLibrary::RegisterDeserializer<CLASS_NAME> CLASS_NAME##_deserializer(#CLASS_NAME);
 
 #define REFLECT_CUSTOM(CLASS_NAME, ...)                                   \
     REFLECT_FIELDS(CLASS_NAME::Reflector, __VA_ARGS__)                    \
