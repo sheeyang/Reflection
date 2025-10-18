@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 #include "Json.h"
+#include <functional>
 
 namespace ReflectionLibrary
 {
@@ -17,16 +18,11 @@ namespace ReflectionLibrary
     template <typename T>
     std::optional<T> from_json(const std::string &json_str);
 
-    struct DeserializeInfo
-    {
-        std::string type;
-        int index;
-    };
-
     struct IDeserializer
     {
         virtual ~IDeserializer() = default;
-        virtual DeserializeInfo deserialize(const std::string &json_str) const = 0;
+        virtual int deserialize(const std::string &json_str) const = 0;
+        virtual void visit(int index, std::function<void(const void *)> visitor) const = 0;
     };
 
     inline static std::unordered_map<std::string, std::unique_ptr<IDeserializer>> deserializer_registry;
@@ -37,11 +33,20 @@ namespace ReflectionLibrary
     {
         std::unordered_map<int, T> deserialized_objects;
 
-        DeserializeInfo deserialize(const std::string &json_str) const override
+        int deserialize(const std::string &json_str) const override
         {
             int index = deserialized_objects.size();
             deserialized_objects[index] = from_json<T>(json_str);
-            return {get_class_name<T>(), index};
+            return index;
+        }
+
+        void visit(int index, std::function<void(const T &)> visitor) const
+        {
+            auto it = deserialized_objects.find(index);
+            if (it != deserialized_objects.end())
+            {
+                visitor(it->second);
+            }
         }
     };
 
@@ -99,27 +104,28 @@ namespace ReflectionLibrary
         static constexpr const char *class_name = #CLASS_NAME;                                                                       \
         static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
     };                                                                                                                               \
-    template <>                                                                                                                      \
-    std::optional<CLASS_NAME> ReflectionLibrary::from_json<CLASS_NAME>(const std::string &json_str)                                  \
+    namespace                                                                                                                        \
     {                                                                                                                                \
-        return ReflectionLibrary::from_json<CLASS_NAME>(json_str);                                                                   \
-    }                                                                                                                                \
-    static ReflectionLibrary::RegisterDeserializer<CLASS_NAME> CLASS_NAME##_deserializer(#CLASS_NAME);
+        ReflectionLibrary::RegisterDeserializer<CLASS_NAME> CLASS_NAME##_deserializer(#CLASS_NAME);                                  \
+    }
 
-#define REFLECT_CUSTOM(CLASS_NAME, ...)                                   \
-    REFLECT_FIELDS(CLASS_NAME::Reflector, __VA_ARGS__)                    \
-    template <>                                                           \
-    struct ReflectionLibrary::ReflectionInfo<CLASS_NAME>                  \
-    {                                                                     \
-        using Reflector = CLASS_NAME::Reflector;                          \
-        static constexpr const char *class_name = #CLASS_NAME;            \
-        static constexpr auto fields = ReflectionInfo<Reflector>::fields; \
-        static CLASS_NAME create(const Reflector &r)                      \
-        {                                                                 \
-            return CLASS_NAME::Reflector::create(r);                      \
-        }                                                                 \
-        static Reflector reflect(const CLASS_NAME &obj)                   \
-        {                                                                 \
-            return CLASS_NAME::Reflector::reflect(obj);                   \
-        }                                                                 \
-    };
+#define REFLECT_CUSTOM(CLASS_NAME, ...)                                                                                             \
+    template <>                                                                                                                     \
+    struct ReflectionLibrary::ReflectionInfo<CLASS_NAME>                                                                            \
+    {                                                                                                                               \
+        using Reflector = CLASS_NAME::Reflector;                                                                                    \
+        static constexpr const char *class_name = #CLASS_NAME;                                                                      \
+        static constexpr auto fields = std::make_tuple(EXPAND_MACROS(Reflector, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
+        static CLASS_NAME create(const Reflector &r)                                                                                \
+        {                                                                                                                           \
+            return CLASS_NAME::Reflector::create(r);                                                                                \
+        }                                                                                                                           \
+        static Reflector reflect(const CLASS_NAME &obj)                                                                             \
+        {                                                                                                                           \
+            return CLASS_NAME::Reflector::reflect(obj);                                                                             \
+        }                                                                                                                           \
+    };                                                                                                                              \
+    namespace                                                                                                                       \
+    {                                                                                                                               \
+        ReflectionLibrary::RegisterDeserializer<CLASS_NAME> CLASS_NAME##_deserializer(#CLASS_NAME);                                 \
+    }
