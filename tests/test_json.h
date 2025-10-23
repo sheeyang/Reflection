@@ -5,6 +5,8 @@
 #include "types.h"
 #include <catch2/catch_all.hpp>
 
+using namespace ReflectionLibrary;
+
 TEST_CASE("JSON serialize/deserialize Simple struct", "[json]")
 {
   Simple original{ 42, 3.14f, 2.71 };
@@ -300,5 +302,424 @@ TEST_CASE("JSON edge cases", "[json]")
 
     REQUIRE(result.has_value());
     REQUIRE(result->stringValue == "Test\n\t\"quotes\"\\backslash");
+  }
+}
+
+
+TEST_CASE("GenericValue JSON serialization", "[value][json]")
+{
+  SECTION("Null value")
+  {
+    GenericValue v;
+    std::string json = generic_value_to_json(v, false);
+    REQUIRE(json == "null");
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE(restored->isNull());
+  }
+
+  SECTION("Boolean values")
+  {
+    GenericValue v_true(true);
+    GenericValue v_false(false);
+
+    std::string json_true = generic_value_to_json(v_true, false);
+    std::string json_false = generic_value_to_json(v_false, false);
+
+    REQUIRE(json_true == "true");
+    REQUIRE(json_false == "false");
+
+    auto restored_true = generic_value_from_json(json_true);
+    auto restored_false = generic_value_from_json(json_false);
+
+    REQUIRE(restored_true.has_value());
+    REQUIRE(restored_true->getBool() == true);
+    REQUIRE(restored_false.has_value());
+    REQUIRE(restored_false->getBool() == false);
+  }
+
+  SECTION("Integer values")
+  {
+    GenericValue v(42);
+    std::string json = generic_value_to_json(v, false);
+    REQUIRE(json == "42");
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE(restored->isInt());
+    REQUIRE(restored->getInt() == 42);
+  }
+
+  SECTION("Double values")
+  {
+    GenericValue v(3.14);
+    std::string json = generic_value_to_json(v, false);
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE(restored->isDouble());
+    REQUIRE(restored->getDouble() == Catch::Approx(3.14));
+  }
+
+  SECTION("String values")
+  {
+    GenericValue v("hello world");
+    std::string json = generic_value_to_json(v, false);
+    REQUIRE(json == "\"hello world\"");
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE(restored->isString());
+    REQUIRE(restored->getString() == "hello world");
+  }
+
+  SECTION("String with special characters")
+  {
+    GenericValue v("Line 1\nLine 2\tTabbed");
+    std::string json = generic_value_to_json(v, false);
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE(restored->getString() == "Line 1\nLine 2\tTabbed");
+  }
+
+  SECTION("Array values")
+  {
+    GenericValue v;
+    v.push_back(GenericValue(1));
+    v.push_back(GenericValue(2));
+    v.push_back(GenericValue(3));
+
+    std::string json = generic_value_to_json(v, false);
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE(restored->isArray());
+    REQUIRE(restored->size() == 3);
+    REQUIRE((*restored)[0].getInt() == 1);
+    REQUIRE((*restored)[1].getInt() == 2);
+    REQUIRE((*restored)[2].getInt() == 3);
+  }
+
+  SECTION("Object values")
+  {
+    GenericValue v;
+    v["name"] = "John";
+    v["age"] = 30;
+    v["active"] = true;
+
+    std::string json = generic_value_to_json(v, false);
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE(restored->isObject());
+    REQUIRE((*restored)["name"].getString() == "John");
+    REQUIRE((*restored)["age"].getInt() == 30);
+    REQUIRE((*restored)["active"].getBool() == true);
+  }
+
+  SECTION("Mixed type array")
+  {
+    GenericValue v;
+    v.push_back(GenericValue(42));
+    v.push_back(GenericValue("string"));
+    v.push_back(GenericValue(3.14));
+    v.push_back(GenericValue(true));
+    v.push_back(GenericValue());
+
+    std::string json = generic_value_to_json(v, false);
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE((*restored)[0].isInt());
+    REQUIRE((*restored)[1].isString());
+    REQUIRE((*restored)[2].isDouble());
+    REQUIRE((*restored)[3].isBool());
+    REQUIRE((*restored)[4].isNull());
+  }
+}
+
+TEST_CASE("GenericValue JSON nested structures", "[value][json]")
+{
+  SECTION("Nested objects")
+  {
+    GenericValue v;
+    v["person"]["name"] = "Alice";
+    v["person"]["age"] = 25;
+    v["person"]["address"]["city"] = "New York";
+    v["person"]["address"]["zip"] = 10001;
+
+    std::string json = generic_value_to_json(v, false);
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE((*restored)["person"]["name"].getString() == "Alice");
+    REQUIRE((*restored)["person"]["age"].getInt() == 25);
+    REQUIRE((*restored)["person"]["address"]["city"].getString() == "New York");
+    REQUIRE((*restored)["person"]["address"]["zip"].getInt() == 10001);
+  }
+
+  SECTION("Array of objects")
+  {
+    GenericValue v;
+    v[0]["name"] = "Alice";
+    v[0]["age"] = 25;
+    v[1]["name"] = "Bob";
+    v[1]["age"] = 30;
+
+    std::string json = generic_value_to_json(v, false);
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE(restored->isArray());
+    REQUIRE((*restored)[0]["name"].getString() == "Alice");
+    REQUIRE((*restored)[1]["name"].getString() == "Bob");
+  }
+
+  SECTION("Object with arrays")
+  {
+    GenericValue v;
+    v["numbers"][0] = 1;
+    v["numbers"][1] = 2;
+    v["numbers"][2] = 3;
+    v["strings"][0] = "a";
+    v["strings"][1] = "b";
+
+    std::string json = generic_value_to_json(v, false);
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE((*restored)["numbers"].size() == 3);
+    REQUIRE((*restored)["strings"].size() == 2);
+    REQUIRE((*restored)["numbers"][0].getInt() == 1);
+    REQUIRE((*restored)["strings"][0].getString() == "a");
+  }
+
+  SECTION("Deep nesting")
+  {
+    GenericValue v;
+    v["a"]["b"]["c"]["d"]["e"]["f"] = "deep value";
+
+    std::string json = generic_value_to_json(v, false);
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE((*restored)["a"]["b"]["c"]["d"]["e"]["f"].getString() == "deep value");
+  }
+}
+
+TEST_CASE("GenericValue JSON pretty printing", "[value][json]")
+{
+  SECTION("Pretty vs compact")
+  {
+    GenericValue v;
+    v["name"] = "John";
+    v["age"] = 30;
+    v["items"][0] = "item1";
+    v["items"][1] = "item2";
+
+    std::string compact = generic_value_to_json(v, false);
+    std::string pretty = generic_value_to_json(v, true);
+
+    // Pretty should have more characters due to newlines and spaces
+    REQUIRE(pretty.length() > compact.length());
+    REQUIRE(pretty.find('\n') != std::string::npos);
+
+    // Both should parse to the same value
+    auto restored_compact = generic_value_from_json(compact);
+    auto restored_pretty = generic_value_from_json(pretty);
+
+    REQUIRE(restored_compact.has_value());
+    REQUIRE(restored_pretty.has_value());
+    REQUIRE((*restored_compact)["name"].getString() == (*restored_pretty)["name"].getString());
+    REQUIRE((*restored_compact)["age"].getInt() == (*restored_pretty)["age"].getInt());
+  }
+}
+
+TEST_CASE("GenericValue JSON error handling", "[value][json]")
+{
+  SECTION("Invalid JSON")
+  {
+    auto result = generic_value_from_json("{ invalid json }");
+    REQUIRE_FALSE(result.has_value());
+  }
+
+  SECTION("Empty string")
+  {
+    auto result = generic_value_from_json("");
+    REQUIRE_FALSE(result.has_value());
+  }
+
+  SECTION("Truncated JSON")
+  {
+    auto result = generic_value_from_json("{\"name\":\"John\"");
+    REQUIRE_FALSE(result.has_value());
+  }
+
+  SECTION("Invalid escape sequences")
+  {
+    auto result = generic_value_from_json("\"invalid\\xescape\"");
+    REQUIRE_FALSE(result.has_value());
+  }
+}
+
+TEST_CASE("GenericValue JSON roundtrip with structs", "[value][json]")
+{
+  SECTION("Simple struct")
+  {
+    Simple original{ 42, 3.14f, 2.71 };
+    GenericValue v = to_generic_value(original);
+
+    std::string json = generic_value_to_json(v, false);
+    auto restored_value = generic_value_from_json(json);
+
+    REQUIRE(restored_value.has_value());
+
+    Simple restored;
+    REQUIRE(from_generic_value(restored, *restored_value));
+    REQUIRE(restored.integerValue == 42);
+    REQUIRE(restored.floatValue == Catch::Approx(3.14f));
+    REQUIRE(restored.doubleValue == Catch::Approx(2.71));
+  }
+
+  SECTION("Nested struct")
+  {
+    Nested original{
+        123,
+        {1, 2.0f, 3.0},
+        {true, 'C', 456, 789, 101112L, 131415LL, 'D', 40000, 5000000,
+         60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L} };
+
+    GenericValue v = to_generic_value(original);
+    std::string json = generic_value_to_json(v, true);
+
+    auto restored_value = generic_value_from_json(json);
+    REQUIRE(restored_value.has_value());
+
+    Nested restored;
+    REQUIRE(from_generic_value(restored, *restored_value));
+    REQUIRE(restored.count == 123);
+    REQUIRE(restored.simpleStruct.integerValue == 1);
+    REQUIRE(restored.primitiveTypes.booleanValue == true);
+    REQUIRE(restored.primitiveTypes.characterValue == 'C');
+  }
+
+  SECTION("ComplexTypes")
+  {
+    ComplexTypes original{
+        "Hello, World!",
+        {1.1, 2.2, 3.3},
+        {10, 20, 30, 40, 50},
+        {"pi", 3.14f},
+        {{"pi", 3.14f}, {"e", 2.71f}},
+        {{1, "one"}, {2, "two"}, {3, "three"}},
+        {0.1, 0.2, 0.3, 0.4, 0.5},
+        {100, 200.0f, "three hundred"} };
+
+    GenericValue v = to_generic_value(original);
+    std::string json = generic_value_to_json(v, true);
+
+    auto restored_value = generic_value_from_json(json);
+    REQUIRE(restored_value.has_value());
+
+    ComplexTypes restored;
+    REQUIRE(from_generic_value(restored, *restored_value));
+    REQUIRE(restored.stringValue == "Hello, World!");
+    REQUIRE(restored.intVector.size() == 5);
+    REQUIRE(restored.intVector[0] == 10);
+  }
+}
+
+TEST_CASE("GenericValue JSON special cases", "[value][json]")
+{
+  SECTION("Empty array")
+  {
+    GenericValue v(Array{});
+    std::string json = generic_value_to_json(v, false);
+    REQUIRE(json == "[]");
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE(restored->isArray());
+    REQUIRE(restored->size() == 0);
+  }
+
+  SECTION("Empty object")
+  {
+    GenericValue v(Object{});
+    std::string json = generic_value_to_json(v, false);
+    REQUIRE(json == "{}");
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE(restored->isObject());
+    REQUIRE(restored->size() == 0);
+  }
+
+  SECTION("Large numbers")
+  {
+    GenericValue v(9223372036854775807LL); // max int64_t
+    std::string json = generic_value_to_json(v, false);
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE(restored->getInt() == 9223372036854775807LL);
+  }
+
+  SECTION("Negative numbers")
+  {
+    GenericValue v(-12345);
+    std::string json = generic_value_to_json(v, false);
+
+    auto restored = generic_value_from_json(json);
+    REQUIRE(restored.has_value());
+    REQUIRE(restored->getInt() == -12345);
+  }
+
+  SECTION("Zero values")
+  {
+    GenericValue v_int(0);
+    GenericValue v_double(0.0);
+
+    auto restored_int = generic_value_from_json(generic_value_to_json(v_int, false));
+    auto restored_double = generic_value_from_json(generic_value_to_json(v_double, false));
+
+    REQUIRE(restored_int.has_value());
+    REQUIRE(restored_int->getInt() == 0);
+    REQUIRE(restored_double.has_value());
+    REQUIRE(restored_double->getDouble() == 0.0);
+  }
+}
+
+TEST_CASE("GenericValue JSON configuration example", "[value][json]")
+{
+  SECTION("Configuration file simulation")
+  {
+    GenericValue config;
+    config["server"]["host"] = "localhost";
+    config["server"]["port"] = 8080;
+    config["server"]["ssl"]["enabled"] = true;
+    config["server"]["ssl"]["cert_path"] = "/etc/ssl/cert.pem";
+    config["database"]["host"] = "db.example.com";
+    config["database"]["port"] = 5432;
+    config["database"]["name"] = "myapp";
+    config["features"][0] = "authentication";
+    config["features"][1] = "logging";
+    config["features"][2] = "monitoring";
+    config["debug"] = false;
+
+    std::string json = generic_value_to_json(config, true);
+
+    // Save and reload
+    auto loaded = generic_value_from_json(json);
+    REQUIRE(loaded.has_value());
+
+    REQUIRE((*loaded)["server"]["host"].getString() == "localhost");
+    REQUIRE((*loaded)["server"]["port"].getInt() == 8080);
+    REQUIRE((*loaded)["server"]["ssl"]["enabled"].getBool() == true);
+    REQUIRE((*loaded)["database"]["name"].getString() == "myapp");
+    REQUIRE((*loaded)["features"].size() == 3);
+    REQUIRE((*loaded)["debug"].getBool() == false);
   }
 }

@@ -183,12 +183,6 @@ namespace ReflectionLibrary
   template <typename T>
   T from_generic_value(const GenericValue& value);
 
-  // Convert GenericValue to JSON string
-  std::string generic_value_to_json(const GenericValue& value, bool pretty = true);
-
-  // Convert JSON string to GenericValue
-  std::optional<GenericValue> generic_value_from_json(const std::string& json_str);
-
 } // namespace ReflectionLibrary
 
 #include "GenericValue.inl"
