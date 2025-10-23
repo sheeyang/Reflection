@@ -614,7 +614,7 @@ namespace ReflectionLibrary
     }
   }
 
-  // Convenience function to convert from GenericValue (returns optional-like behavior)
+  // Convenience function to convert from GenericValue
   template <typename T>
   inline T from_generic_value(const GenericValue& value)
   {
