@@ -421,7 +421,7 @@ namespace ReflectionLibrary
 
   // Convert any C++ type to GenericValue
   template <typename T>
-  inline GenericValue to_value(const T& obj)
+  inline GenericValue to_generic_value(const T& obj)
   {
     using ValueType = std::decay_t<T>;
 
@@ -446,15 +446,15 @@ namespace ReflectionLibrary
     else if constexpr (is_pair_v<ValueType>)
     {
       Object result;
-      result["first"] = to_value(obj.first);
-      result["second"] = to_value(obj.second);
+      result["first"] = to_generic_value(obj.first);
+      result["second"] = to_generic_value(obj.second);
       return GenericValue(std::move(result));
     }
     else if constexpr (is_tuple_v<ValueType>)
     {
       Array result;
       std::apply([&](const auto &...args)
-        { ((result.push_back(to_value(args))), ...); },
+        { ((result.push_back(to_generic_value(args))), ...); },
         obj);
       return GenericValue(std::move(result));
     }
@@ -467,8 +467,8 @@ namespace ReflectionLibrary
         for (const auto& [key, val] : obj)
         {
           Object pair;
-          pair["first"] = to_value(key);
-          pair["second"] = to_value(val);
+          pair["first"] = to_generic_value(key);
+          pair["second"] = to_generic_value(val);
           result.push_back(GenericValue(std::move(pair)));
         }
         return GenericValue(std::move(result));
@@ -479,7 +479,7 @@ namespace ReflectionLibrary
         Array result;
         for (const auto& elem : obj)
         {
-          result.push_back(to_value(elem));
+          result.push_back(to_generic_value(elem));
         }
         return GenericValue(std::move(result));
       }
@@ -489,7 +489,7 @@ namespace ReflectionLibrary
       Object result;
       auto& obj_ref = const_cast<ValueType&>(obj);
       for_each_field(obj_ref, [&](std::string_view name, auto& field_value, int)
-        { result[std::string(name)] = to_value(field_value); });
+        { result[std::string(name)] = to_generic_value(field_value); });
       return GenericValue(std::move(result));
     }
     else
@@ -501,7 +501,7 @@ namespace ReflectionLibrary
 
   // Convert GenericValue back to C++ type
   template <typename T>
-  inline bool from_value(T& obj, const GenericValue& value)
+  inline bool from_generic_value(T& obj, const GenericValue& value)
   {
     using ValueType = std::decay_t<T>;
 
@@ -540,9 +540,9 @@ namespace ReflectionLibrary
     {
       if (!value.isObject())
         return false;
-      if (value.has("first") && !from_value(obj.first, value["first"]))
+      if (value.has("first") && !from_generic_value(obj.first, value["first"]))
         return false;
-      if (value.has("second") && !from_value(obj.second, value["second"]))
+      if (value.has("second") && !from_generic_value(obj.second, value["second"]))
         return false;
       return true;
     }
@@ -557,7 +557,7 @@ namespace ReflectionLibrary
         { (([&]()
           {
             if (idx < arr.size() && success)
-              success = from_value(args, arr[idx]);
+              success = from_generic_value(args, arr[idx]);
             ++idx; }()),
           ...); },
         obj);
@@ -576,7 +576,7 @@ namespace ReflectionLibrary
         for (const auto& elem : arr)
         {
           std::pair<typename ValueType::key_type, typename ValueType::mapped_type> pair{};
-          if (!from_value(pair, elem))
+          if (!from_generic_value(pair, elem))
             return false;
           obj.insert(std::move(pair));
         }
@@ -586,7 +586,7 @@ namespace ReflectionLibrary
         for (const auto& elem : arr)
         {
           typename ValueType::value_type val{};
-          if (!from_value(val, elem))
+          if (!from_generic_value(val, elem))
             return false;
           obj.insert(obj.end(), std::move(val));
         }
@@ -603,7 +603,7 @@ namespace ReflectionLibrary
           std::string key(name);
           if (value.has(key))
           {
-            if (!from_value(field_value, value[key]))
+            if (!from_generic_value(field_value, value[key]))
               success = false;
           } });
           return success;
@@ -616,10 +616,10 @@ namespace ReflectionLibrary
 
   // Convenience function to convert from GenericValue (returns optional-like behavior)
   template <typename T>
-  inline T from_value(const GenericValue& value)
+  inline T from_generic_value(const GenericValue& value)
   {
     T result{};
-    if (!from_value(result, value))
+    if (!from_generic_value(result, value))
     {
       throw std::runtime_error("Failed to convert GenericValue to target type");
     }
@@ -627,7 +627,7 @@ namespace ReflectionLibrary
   }
 
   // Helper function to convert GenericValue to RapidJSON Value
-  static void value_to_rapidjson(const GenericValue& value, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator)
+  static void generic_value_to_rapidjson(const GenericValue& value, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator)
   {
     if (value.isNull())
     {
@@ -657,7 +657,7 @@ namespace ReflectionLibrary
       for (const auto& elem : arr)
       {
         rapidjson::Value elem_val;
-        value_to_rapidjson(elem, elem_val, allocator);
+        generic_value_to_rapidjson(elem, elem_val, allocator);
         json_val.PushBack(elem_val, allocator);
       }
     }
@@ -669,14 +669,14 @@ namespace ReflectionLibrary
       {
         rapidjson::Value key_val(key.c_str(), static_cast<rapidjson::SizeType>(key.length()), allocator);
         rapidjson::Value val_json;
-        value_to_rapidjson(val, val_json, allocator);
+        generic_value_to_rapidjson(val, val_json, allocator);
         json_val.AddMember(key_val, val_json, allocator);
       }
     }
   }
 
   // Helper function to convert RapidJSON Value to GenericValue
-  static GenericValue rapidjson_to_value(const rapidjson::Value& json_val)
+  static GenericValue rapidjson_value_to_generic_value(const rapidjson::Value& json_val)
   {
     if (json_val.IsNull())
     {
@@ -715,7 +715,7 @@ namespace ReflectionLibrary
       Array arr;
       for (auto it = json_val.Begin(); it != json_val.End(); ++it)
       {
-        arr.push_back(rapidjson_to_value(*it));
+        arr.push_back(rapidjson_value_to_generic_value(*it));
       }
       return GenericValue(std::move(arr));
     }
@@ -724,7 +724,7 @@ namespace ReflectionLibrary
       Object obj;
       for (auto it = json_val.MemberBegin(); it != json_val.MemberEnd(); ++it)
       {
-        obj[it->name.GetString()] = rapidjson_to_value(it->value);
+        obj[it->name.GetString()] = rapidjson_value_to_generic_value(it->value);
       }
       return GenericValue(std::move(obj));
     }
@@ -732,12 +732,12 @@ namespace ReflectionLibrary
     return GenericValue();
   }
 
-  std::string value_to_json(const GenericValue& value, bool pretty)
+  std::string generic_value_to_json(const GenericValue& value, bool pretty)
   {
     rapidjson::Document doc;
     auto& allocator = doc.GetAllocator();
 
-    value_to_rapidjson(value, doc, allocator);
+    generic_value_to_rapidjson(value, doc, allocator);
 
     rapidjson::StringBuffer buffer;
     if (pretty)
@@ -754,7 +754,7 @@ namespace ReflectionLibrary
     return buffer.GetString();
   }
 
-  std::optional<GenericValue> value_from_json(const std::string& json_str)
+  std::optional<GenericValue> generic_value_from_json(const std::string& json_str)
   {
     rapidjson::Document doc;
     doc.Parse(json_str.c_str());
@@ -764,7 +764,7 @@ namespace ReflectionLibrary
       return std::nullopt;
     }
 
-    return rapidjson_to_value(doc);
+    return rapidjson_value_to_generic_value(doc);
   }
 
 } // namespace ReflectionLibrary

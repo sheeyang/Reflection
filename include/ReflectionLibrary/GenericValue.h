@@ -173,21 +173,21 @@ namespace ReflectionLibrary
 
   // Convert any C++ type to GenericValue
   template <typename T>
-  GenericValue to_value(const T& obj);
+  GenericValue to_generic_value(const T& obj);
 
   // Convert GenericValue back to C++ type
   template <typename T>
-  bool from_value(T& obj, const GenericValue& value);
+  bool from_generic_value(T& obj, const GenericValue& value);
 
   // Convenience function to convert from GenericValue
   template <typename T>
-  T from_value(const GenericValue& value);
+  T from_generic_value(const GenericValue& value);
 
   // Convert GenericValue to JSON string
-  std::string value_to_json(const GenericValue& value, bool pretty = true);
+  std::string generic_value_to_json(const GenericValue& value, bool pretty = true);
 
   // Convert JSON string to GenericValue
-  std::optional<GenericValue> value_from_json(const std::string& json_str);
+  std::optional<GenericValue> generic_value_from_json(const std::string& json_str);
 
 } // namespace ReflectionLibrary
 

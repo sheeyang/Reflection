@@ -206,12 +206,12 @@ TEST_CASE("GenericValue array operations", "[value]")
   }
 }
 
-TEST_CASE("GenericValue to_value conversions", "[value]")
+TEST_CASE("GenericValue to_generic_value conversions", "[value]")
 {
   SECTION("Simple struct")
   {
     Simple s{ 42, 3.14f, 2.71 };
-    GenericValue v = to_value(s);
+    GenericValue v = to_generic_value(s);
 
     REQUIRE(v.isObject());
     REQUIRE(v["integerValue"].getInt() == 42);
@@ -222,7 +222,7 @@ TEST_CASE("GenericValue to_value conversions", "[value]")
   SECTION("Nested struct")
   {
     Nested n{ 123, {1, 2.0f, 3.0}, {true, 'C', 456, 789, 101112L, 131415LL, 'D', 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L} };
-    GenericValue v = to_value(n);
+    GenericValue v = to_generic_value(n);
 
     REQUIRE(v.isObject());
     REQUIRE(v["count"].getInt() == 123);
@@ -233,7 +233,7 @@ TEST_CASE("GenericValue to_value conversions", "[value]")
   SECTION("Vector")
   {
     std::vector<int> vec = { 10, 20, 30, 40, 50 };
-    GenericValue v = to_value(vec);
+    GenericValue v = to_generic_value(vec);
 
     REQUIRE(v.isArray());
     REQUIRE(v.size() == 5);
@@ -244,7 +244,7 @@ TEST_CASE("GenericValue to_value conversions", "[value]")
   SECTION("Map")
   {
     std::map<std::string, int> map = { {"one", 1}, {"two", 2}, {"three", 3} };
-    GenericValue v = to_value(map);
+    GenericValue v = to_generic_value(map);
 
     REQUIRE(v.isArray());
     REQUIRE(v.size() == 3);
@@ -253,7 +253,7 @@ TEST_CASE("GenericValue to_value conversions", "[value]")
   SECTION("Pair")
   {
     std::pair<std::string, float> p = { "pi", 3.14f };
-    GenericValue v = to_value(p);
+    GenericValue v = to_generic_value(p);
 
     REQUIRE(v.isObject());
     REQUIRE(v["first"].getString() == "pi");
@@ -263,7 +263,7 @@ TEST_CASE("GenericValue to_value conversions", "[value]")
   SECTION("Tuple")
   {
     std::tuple<int, float, std::string> t = { 100, 200.0f, "three hundred" };
-    GenericValue v = to_value(t);
+    GenericValue v = to_generic_value(t);
 
     REQUIRE(v.isArray());
     REQUIRE(v.size() == 3);
@@ -273,15 +273,15 @@ TEST_CASE("GenericValue to_value conversions", "[value]")
   }
 }
 
-TEST_CASE("GenericValue from_value conversions", "[value]")
+TEST_CASE("GenericValue from_generic_value conversions", "[value]")
 {
   SECTION("Simple struct roundtrip")
   {
     Simple original{ 42, 3.14f, 2.71 };
-    GenericValue v = to_value(original);
+    GenericValue v = to_generic_value(original);
 
     Simple restored;
-    REQUIRE(from_value(restored, v));
+    REQUIRE(from_generic_value(restored, v));
     REQUIRE(restored.integerValue == 42);
     REQUIRE(restored.floatValue == Catch::Approx(3.14f));
     REQUIRE(restored.doubleValue == Catch::Approx(2.71));
@@ -290,10 +290,10 @@ TEST_CASE("GenericValue from_value conversions", "[value]")
   SECTION("Nested struct roundtrip")
   {
     Nested original{ 123, {1, 2.0f, 3.0}, {true, 'C', 456, 789, 101112L, 131415LL, 'D', 40000, 5000000, 60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L} };
-    GenericValue v = to_value(original);
+    GenericValue v = to_generic_value(original);
 
     Nested restored;
-    REQUIRE(from_value(restored, v));
+    REQUIRE(from_generic_value(restored, v));
     REQUIRE(restored.count == 123);
     REQUIRE(restored.simpleStruct.integerValue == 1);
     REQUIRE(restored.primitiveTypes.booleanValue == true);
@@ -303,10 +303,10 @@ TEST_CASE("GenericValue from_value conversions", "[value]")
   SECTION("Vector roundtrip")
   {
     std::vector<int> original = { 10, 20, 30, 40, 50 };
-    GenericValue v = to_value(original);
+    GenericValue v = to_generic_value(original);
 
     std::vector<int> restored;
-    REQUIRE(from_value(restored, v));
+    REQUIRE(from_generic_value(restored, v));
     REQUIRE(restored == original);
   }
 
@@ -314,17 +314,17 @@ TEST_CASE("GenericValue from_value conversions", "[value]")
   {
     GenericValue v_int(42);
     int i;
-    REQUIRE(from_value(i, v_int));
+    REQUIRE(from_generic_value(i, v_int));
     REQUIRE(i == 42);
 
     GenericValue v_str("hello");
     std::string s;
-    REQUIRE(from_value(s, v_str));
+    REQUIRE(from_generic_value(s, v_str));
     REQUIRE(s == "hello");
 
     GenericValue v_bool(true);
     bool b;
-    REQUIRE(from_value(b, v_bool));
+    REQUIRE(from_generic_value(b, v_bool));
     REQUIRE(b == true);
   }
 }
@@ -334,7 +334,7 @@ TEST_CASE("GenericValue modify through proxy", "[value]")
   SECTION("Modify nested values")
   {
     Simple s{ 42, 3.14f, 2.71 };
-    GenericValue v = to_value(s);
+    GenericValue v = to_generic_value(s);
 
     v["integerValue"] = 100;
     v["floatValue"] = 9.99;
@@ -345,7 +345,7 @@ TEST_CASE("GenericValue modify through proxy", "[value]")
     REQUIRE(v["doubleValue"].getDouble() == Catch::Approx(1.23));
 
     Simple restored;
-    from_value(restored, v);
+    from_generic_value(restored, v);
     REQUIRE(restored.integerValue == 100);
     REQUIRE(restored.floatValue == Catch::Approx(9.99f));
     REQUIRE(restored.doubleValue == Catch::Approx(1.23));
@@ -525,14 +525,14 @@ TEST_CASE("GenericValue complex scenarios", "[value]")
         {0.1, 0.2, 0.3, 0.4, 0.5},
         {100, 200.0f, "three hundred"} };
 
-    GenericValue v = to_value(original);
+    GenericValue v = to_generic_value(original);
 
     // Modify through proxy
     v["stringValue"] = "Modified!";
     v["intVector"][0] = 999;
 
     ComplexTypes restored;
-    REQUIRE(from_value(restored, v));
+    REQUIRE(from_generic_value(restored, v));
     REQUIRE(restored.stringValue == "Modified!");
     REQUIRE(restored.intVector[0] == 999);
   }
@@ -583,9 +583,9 @@ TEST_CASE("GenericValue with ContainsNotReflected", "[value]")
   original.notReflectedStruct.xValue = 100;
   original.notReflectedStruct.yValue = 200.5f;
 
-  SECTION("to_value")
+  SECTION("to_generic_value")
   {
-    GenericValue v = to_value(original);
+    GenericValue v = to_generic_value(original);
     REQUIRE(v.isObject());
     REQUIRE(v["aValue"].getInt() == 100);
     REQUIRE(v["bValue"].getDouble() == Catch::Approx(200.5f));
@@ -593,13 +593,13 @@ TEST_CASE("GenericValue with ContainsNotReflected", "[value]")
 
   SECTION("Roundtrip")
   {
-    GenericValue v = to_value(original);
+    GenericValue v = to_generic_value(original);
 
     v["aValue"] = 150;
     v["bValue"] = 250.5;
 
     ContainsNotReflected restored;
-    REQUIRE(from_value(restored, v));
+    REQUIRE(from_generic_value(restored, v));
     REQUIRE(restored.notReflectedStruct.xValue == 150);
     REQUIRE(restored.notReflectedStruct.yValue == Catch::Approx(250.5f));
   }
@@ -607,11 +607,11 @@ TEST_CASE("GenericValue with ContainsNotReflected", "[value]")
 
 TEST_CASE("GenericValue type conversions", "[value]")
 {
-  SECTION("Int to double conversion in from_value")
+  SECTION("Int to double conversion in from_generic_value")
   {
     GenericValue v(42);
     double d;
-    REQUIRE(from_value(d, v));
+    REQUIRE(from_generic_value(d, v));
     REQUIRE(d == Catch::Approx(42.0));
   }
 
@@ -619,11 +619,11 @@ TEST_CASE("GenericValue type conversions", "[value]")
   {
     GenericValue v("not a number");
     int i;
-    REQUIRE_FALSE(from_value(i, v));
+    REQUIRE_FALSE(from_generic_value(i, v));
 
     GenericValue v2(42);
     std::string s;
-    REQUIRE_FALSE(from_value(s, v2));
+    REQUIRE_FALSE(from_generic_value(s, v2));
   }
 }
 
@@ -632,10 +632,10 @@ TEST_CASE("GenericValue JSON serialization", "[value][json]")
   SECTION("Null value")
   {
     GenericValue v;
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
     REQUIRE(json == "null");
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE(restored->isNull());
   }
@@ -645,14 +645,14 @@ TEST_CASE("GenericValue JSON serialization", "[value][json]")
     GenericValue v_true(true);
     GenericValue v_false(false);
 
-    std::string json_true = value_to_json(v_true, false);
-    std::string json_false = value_to_json(v_false, false);
+    std::string json_true = generic_value_to_json(v_true, false);
+    std::string json_false = generic_value_to_json(v_false, false);
 
     REQUIRE(json_true == "true");
     REQUIRE(json_false == "false");
 
-    auto restored_true = value_from_json(json_true);
-    auto restored_false = value_from_json(json_false);
+    auto restored_true = generic_value_from_json(json_true);
+    auto restored_false = generic_value_from_json(json_false);
 
     REQUIRE(restored_true.has_value());
     REQUIRE(restored_true->getBool() == true);
@@ -663,10 +663,10 @@ TEST_CASE("GenericValue JSON serialization", "[value][json]")
   SECTION("Integer values")
   {
     GenericValue v(42);
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
     REQUIRE(json == "42");
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE(restored->isInt());
     REQUIRE(restored->getInt() == 42);
@@ -675,9 +675,9 @@ TEST_CASE("GenericValue JSON serialization", "[value][json]")
   SECTION("Double values")
   {
     GenericValue v(3.14);
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE(restored->isDouble());
     REQUIRE(restored->getDouble() == Catch::Approx(3.14));
@@ -686,10 +686,10 @@ TEST_CASE("GenericValue JSON serialization", "[value][json]")
   SECTION("String values")
   {
     GenericValue v("hello world");
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
     REQUIRE(json == "\"hello world\"");
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE(restored->isString());
     REQUIRE(restored->getString() == "hello world");
@@ -698,9 +698,9 @@ TEST_CASE("GenericValue JSON serialization", "[value][json]")
   SECTION("String with special characters")
   {
     GenericValue v("Line 1\nLine 2\tTabbed");
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE(restored->getString() == "Line 1\nLine 2\tTabbed");
   }
@@ -712,9 +712,9 @@ TEST_CASE("GenericValue JSON serialization", "[value][json]")
     v.push_back(GenericValue(2));
     v.push_back(GenericValue(3));
 
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE(restored->isArray());
     REQUIRE(restored->size() == 3);
@@ -730,9 +730,9 @@ TEST_CASE("GenericValue JSON serialization", "[value][json]")
     v["age"] = 30;
     v["active"] = true;
 
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE(restored->isObject());
     REQUIRE((*restored)["name"].getString() == "John");
@@ -749,9 +749,9 @@ TEST_CASE("GenericValue JSON serialization", "[value][json]")
     v.push_back(GenericValue(true));
     v.push_back(GenericValue());
 
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE((*restored)[0].isInt());
     REQUIRE((*restored)[1].isString());
@@ -771,9 +771,9 @@ TEST_CASE("GenericValue JSON nested structures", "[value][json]")
     v["person"]["address"]["city"] = "New York";
     v["person"]["address"]["zip"] = 10001;
 
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE((*restored)["person"]["name"].getString() == "Alice");
     REQUIRE((*restored)["person"]["age"].getInt() == 25);
@@ -789,9 +789,9 @@ TEST_CASE("GenericValue JSON nested structures", "[value][json]")
     v[1]["name"] = "Bob";
     v[1]["age"] = 30;
 
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE(restored->isArray());
     REQUIRE((*restored)[0]["name"].getString() == "Alice");
@@ -807,9 +807,9 @@ TEST_CASE("GenericValue JSON nested structures", "[value][json]")
     v["strings"][0] = "a";
     v["strings"][1] = "b";
 
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE((*restored)["numbers"].size() == 3);
     REQUIRE((*restored)["strings"].size() == 2);
@@ -822,9 +822,9 @@ TEST_CASE("GenericValue JSON nested structures", "[value][json]")
     GenericValue v;
     v["a"]["b"]["c"]["d"]["e"]["f"] = "deep value";
 
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE((*restored)["a"]["b"]["c"]["d"]["e"]["f"].getString() == "deep value");
   }
@@ -840,16 +840,16 @@ TEST_CASE("GenericValue JSON pretty printing", "[value][json]")
     v["items"][0] = "item1";
     v["items"][1] = "item2";
 
-    std::string compact = value_to_json(v, false);
-    std::string pretty = value_to_json(v, true);
+    std::string compact = generic_value_to_json(v, false);
+    std::string pretty = generic_value_to_json(v, true);
 
     // Pretty should have more characters due to newlines and spaces
     REQUIRE(pretty.length() > compact.length());
     REQUIRE(pretty.find('\n') != std::string::npos);
 
     // Both should parse to the same value
-    auto restored_compact = value_from_json(compact);
-    auto restored_pretty = value_from_json(pretty);
+    auto restored_compact = generic_value_from_json(compact);
+    auto restored_pretty = generic_value_from_json(pretty);
 
     REQUIRE(restored_compact.has_value());
     REQUIRE(restored_pretty.has_value());
@@ -862,25 +862,25 @@ TEST_CASE("GenericValue JSON error handling", "[value][json]")
 {
   SECTION("Invalid JSON")
   {
-    auto result = value_from_json("{ invalid json }");
+    auto result = generic_value_from_json("{ invalid json }");
     REQUIRE_FALSE(result.has_value());
   }
 
   SECTION("Empty string")
   {
-    auto result = value_from_json("");
+    auto result = generic_value_from_json("");
     REQUIRE_FALSE(result.has_value());
   }
 
   SECTION("Truncated JSON")
   {
-    auto result = value_from_json("{\"name\":\"John\"");
+    auto result = generic_value_from_json("{\"name\":\"John\"");
     REQUIRE_FALSE(result.has_value());
   }
 
   SECTION("Invalid escape sequences")
   {
-    auto result = value_from_json("\"invalid\\xescape\"");
+    auto result = generic_value_from_json("\"invalid\\xescape\"");
     REQUIRE_FALSE(result.has_value());
   }
 }
@@ -890,15 +890,15 @@ TEST_CASE("GenericValue JSON roundtrip with structs", "[value][json]")
   SECTION("Simple struct")
   {
     Simple original{ 42, 3.14f, 2.71 };
-    GenericValue v = to_value(original);
+    GenericValue v = to_generic_value(original);
 
-    std::string json = value_to_json(v, false);
-    auto restored_value = value_from_json(json);
+    std::string json = generic_value_to_json(v, false);
+    auto restored_value = generic_value_from_json(json);
 
     REQUIRE(restored_value.has_value());
 
     Simple restored;
-    REQUIRE(from_value(restored, *restored_value));
+    REQUIRE(from_generic_value(restored, *restored_value));
     REQUIRE(restored.integerValue == 42);
     REQUIRE(restored.floatValue == Catch::Approx(3.14f));
     REQUIRE(restored.doubleValue == Catch::Approx(2.71));
@@ -912,14 +912,14 @@ TEST_CASE("GenericValue JSON roundtrip with structs", "[value][json]")
         {true, 'C', 456, 789, 101112L, 131415LL, 'D', 40000, 5000000,
          60000000UL, 7000000000ULL, 2.34f, 5.67, 8.90L} };
 
-    GenericValue v = to_value(original);
-    std::string json = value_to_json(v, true);
+    GenericValue v = to_generic_value(original);
+    std::string json = generic_value_to_json(v, true);
 
-    auto restored_value = value_from_json(json);
+    auto restored_value = generic_value_from_json(json);
     REQUIRE(restored_value.has_value());
 
     Nested restored;
-    REQUIRE(from_value(restored, *restored_value));
+    REQUIRE(from_generic_value(restored, *restored_value));
     REQUIRE(restored.count == 123);
     REQUIRE(restored.simpleStruct.integerValue == 1);
     REQUIRE(restored.primitiveTypes.booleanValue == true);
@@ -938,14 +938,14 @@ TEST_CASE("GenericValue JSON roundtrip with structs", "[value][json]")
         {0.1, 0.2, 0.3, 0.4, 0.5},
         {100, 200.0f, "three hundred"} };
 
-    GenericValue v = to_value(original);
-    std::string json = value_to_json(v, true);
+    GenericValue v = to_generic_value(original);
+    std::string json = generic_value_to_json(v, true);
 
-    auto restored_value = value_from_json(json);
+    auto restored_value = generic_value_from_json(json);
     REQUIRE(restored_value.has_value());
 
     ComplexTypes restored;
-    REQUIRE(from_value(restored, *restored_value));
+    REQUIRE(from_generic_value(restored, *restored_value));
     REQUIRE(restored.stringValue == "Hello, World!");
     REQUIRE(restored.intVector.size() == 5);
     REQUIRE(restored.intVector[0] == 10);
@@ -957,10 +957,10 @@ TEST_CASE("GenericValue JSON special cases", "[value][json]")
   SECTION("Empty array")
   {
     GenericValue v(Array{});
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
     REQUIRE(json == "[]");
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE(restored->isArray());
     REQUIRE(restored->size() == 0);
@@ -969,10 +969,10 @@ TEST_CASE("GenericValue JSON special cases", "[value][json]")
   SECTION("Empty object")
   {
     GenericValue v(Object{});
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
     REQUIRE(json == "{}");
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE(restored->isObject());
     REQUIRE(restored->size() == 0);
@@ -981,9 +981,9 @@ TEST_CASE("GenericValue JSON special cases", "[value][json]")
   SECTION("Large numbers")
   {
     GenericValue v(9223372036854775807LL); // max int64_t
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE(restored->getInt() == 9223372036854775807LL);
   }
@@ -991,9 +991,9 @@ TEST_CASE("GenericValue JSON special cases", "[value][json]")
   SECTION("Negative numbers")
   {
     GenericValue v(-12345);
-    std::string json = value_to_json(v, false);
+    std::string json = generic_value_to_json(v, false);
 
-    auto restored = value_from_json(json);
+    auto restored = generic_value_from_json(json);
     REQUIRE(restored.has_value());
     REQUIRE(restored->getInt() == -12345);
   }
@@ -1003,8 +1003,8 @@ TEST_CASE("GenericValue JSON special cases", "[value][json]")
     GenericValue v_int(0);
     GenericValue v_double(0.0);
 
-    auto restored_int = value_from_json(value_to_json(v_int, false));
-    auto restored_double = value_from_json(value_to_json(v_double, false));
+    auto restored_int = generic_value_from_json(generic_value_to_json(v_int, false));
+    auto restored_double = generic_value_from_json(generic_value_to_json(v_double, false));
 
     REQUIRE(restored_int.has_value());
     REQUIRE(restored_int->getInt() == 0);
@@ -1030,10 +1030,10 @@ TEST_CASE("GenericValue JSON configuration example", "[value][json]")
     config["features"][2] = "monitoring";
     config["debug"] = false;
 
-    std::string json = value_to_json(config, true);
+    std::string json = generic_value_to_json(config, true);
 
     // Save and reload
-    auto loaded = value_from_json(json);
+    auto loaded = generic_value_from_json(json);
     REQUIRE(loaded.has_value());
 
     REQUIRE((*loaded)["server"]["host"].getString() == "localhost");
