@@ -181,7 +181,7 @@ namespace ReflectionLibrary
 
   // Convenience function to convert from GenericValue
   template <typename T>
-  T from_generic_value(const GenericValue& value);
+  std::optional<T> from_generic_value(const GenericValue& value);
 
 } // namespace ReflectionLibrary
 

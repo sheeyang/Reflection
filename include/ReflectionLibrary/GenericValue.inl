@@ -616,12 +616,12 @@ namespace ReflectionLibrary
 
   // Convenience function to convert from GenericValue
   template <typename T>
-  inline T from_generic_value(const GenericValue& value)
+  inline std::optional<T> from_generic_value(const GenericValue& value)
   {
     T result{};
     if (!from_generic_value(result, value))
     {
-      throw std::runtime_error("Failed to convert GenericValue to target type");
+      return std::nullopt;
     }
     return result;
   }
