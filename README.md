@@ -138,7 +138,7 @@ int main()
 ```
 
 **Output:**
-```json
+```
 JSON:
 {
     "name": "Laptop",
