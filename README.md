@@ -382,6 +382,9 @@ struct Point
         int x;
         int y;
         
+        
+        // Transforms the reflectable fields (x, y) into the actual Point object
+        // Example: Called during deserialization (JSON/GenericValue -> Point)
         static Point create(const Reflector& r)
         {
             Point p;
@@ -390,6 +393,8 @@ struct Point
             return p;
         }
         
+        // Extracts the reflectable fields (x, y) from the Point object
+        // Example: Called during serialization (Point -> JSON/GenericValue)
         static Reflector reflect(const Point& p)
         {
             Reflector r;
