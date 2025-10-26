@@ -4,9 +4,9 @@ project(ReflectionLibrary)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Add MSVC-specific flags for proper macro expansion
+# Add MSVC-specific flags
 if(MSVC)
-    add_compile_options(/Zc:preprocessor)
+    add_compile_options(/Zc:preprocessor /MP)
 endif()
 
 # Include FetchContent module for downloading dependencies
