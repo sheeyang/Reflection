@@ -723,3 +723,32 @@ TEST_CASE("GenericValue JSON configuration example", "[value][json]")
     REQUIRE((*loaded)["debug"].getBool() == false);
   }
 }
+
+TEST_CASE("JSON serialize/deserialize EmptyStruct", "[json]")
+{
+  EmptyStruct original;
+
+  SECTION("Serialize")
+  {
+    std::string json = ReflectionLibrary::to_json(original);
+    REQUIRE_FALSE(json.empty());
+    // Empty struct should serialize to empty object
+    REQUIRE(json == "{}");
+  }
+
+  SECTION("Roundtrip")
+  {
+    std::string json = ReflectionLibrary::to_json(original);
+    auto result = ReflectionLibrary::from_json<EmptyStruct>(json);
+
+    REQUIRE(result.has_value());
+  }
+
+  SECTION("Deserialize from empty object")
+  {
+    std::string json = "{}";
+    auto result = ReflectionLibrary::from_json<EmptyStruct>(json);
+
+    REQUIRE(result.has_value());
+  }
+}

@@ -111,3 +111,8 @@ struct ContainsNotReflected
   };
 };
 REFLECT_CUSTOM(ContainsNotReflected, aValue, bValue)
+
+struct EmptyStruct
+{
+};
+REFLECT_FIELDS(EmptyStruct)

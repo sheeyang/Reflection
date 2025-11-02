@@ -307,3 +307,29 @@ TEST_CASE("ContainsNotReflected struct reflection", "[reflection]")
     REQUIRE(nest_levels == std::vector<int>{0, 0}); // All top-level fields
   }
 }
+
+TEST_CASE("EmptyStruct reflection", "[reflection]")
+{
+  EmptyStruct obj;
+
+  SECTION("Class name")
+  {
+    REQUIRE(ReflectionLibrary::get_class_name(obj) == "EmptyStruct");
+    REQUIRE(ReflectionLibrary::class_name<EmptyStruct> == std::string("EmptyStruct"));
+  }
+
+  SECTION("Field count")
+  {
+    REQUIRE(ReflectionLibrary::get_field_count(obj) == 0);
+    REQUIRE(ReflectionLibrary::field_count<EmptyStruct> == 0);
+  }
+
+  SECTION("Field iteration")
+  {
+    int count = 0;
+    ReflectionLibrary::for_each_field(obj, [&](std::string_view name, auto& value, int nest_level)
+      {
+        count++; });
+    REQUIRE(count == 0); // No fields to iterate
+  }
+}
