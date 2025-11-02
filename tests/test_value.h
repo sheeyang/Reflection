@@ -626,3 +626,30 @@ TEST_CASE("GenericValue type conversions", "[value]")
     REQUIRE_FALSE(from_generic_value(s, v2));
   }
 }
+
+TEST_CASE("GenericValue EmptyStruct handling", "[value]")
+{
+  SECTION("to_generic_value with empty struct")
+  {
+    EmptyStruct s;
+    GenericValue v = to_generic_value(s);
+    REQUIRE(v.isObject());
+    REQUIRE(v.size() == 0);
+  }
+
+  SECTION("from_generic_value with empty struct")
+  {
+    GenericValue v(Object{});
+    EmptyStruct restored;
+    REQUIRE(from_generic_value(restored, v));
+  }
+
+  SECTION("Roundtrip empty struct")
+  {
+    EmptyStruct original;
+    GenericValue v = to_generic_value(original);
+
+    EmptyStruct restored;
+    REQUIRE(from_generic_value(restored, v));
+  }
+}

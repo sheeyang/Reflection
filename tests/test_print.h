@@ -299,3 +299,17 @@ TEST_CASE("Print ContainsNotReflected struct", "[print]")
 
   REQUIRE(output == expected);
 }
+
+TEST_CASE("Print EmptyStruct", "[print]")
+{
+  EmptyStruct obj;
+
+  CaptureStdout capture;
+  ReflectionLibrary::print(obj);
+  std::string output = capture.get_output();
+
+  std::string expected = R"(Type: EmptyStruct
+)";
+
+  REQUIRE(output == expected);
+}
