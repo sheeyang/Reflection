@@ -653,3 +653,165 @@ TEST_CASE("GenericValue EmptyStruct handling", "[value]")
     REQUIRE(from_generic_value(restored, v));
   }
 }
+
+TEST_CASE("GenericValue mutable getters", "[value][mutable]")
+{
+  SECTION("Modify integer through proxy")
+  {
+    GenericValue v;
+    v["count"] = 10;
+
+    REQUIRE(v["count"].getInt() == 10);
+    v["count"].getInt() = 42;
+    REQUIRE(v["count"].getInt() == 42);
+  }
+
+  SECTION("Modify double through proxy")
+  {
+    GenericValue v;
+    v["pi"] = 3.14;
+
+    REQUIRE(v["pi"].getDouble() == 3.14);
+    v["pi"].getDouble() = 2.71;
+    REQUIRE(v["pi"].getDouble() == 2.71);
+  }
+
+  SECTION("Modify boolean through proxy")
+  {
+    GenericValue v;
+    v["flag"] = true;
+
+    REQUIRE(v["flag"].getBool() == true);
+    v["flag"].getBool() = false;
+    REQUIRE(v["flag"].getBool() == false);
+  }
+
+  SECTION("Modify string through proxy")
+  {
+    GenericValue v;
+    v["name"] = "Alice";
+
+    REQUIRE(v["name"].getString() == "Alice");
+    v["name"].getString() = "Bob";
+    REQUIRE(v["name"].getString() == "Bob");
+
+    // Append to string
+    v["name"].getString() += " Smith";
+    REQUIRE(v["name"].getString() == "Bob Smith");
+  }
+
+  SECTION("Modify array element")
+  {
+    GenericValue v;
+    v[0] = 1;
+    v[1] = 2;
+    v[2] = 3;
+
+    REQUIRE(v[1].getInt() == 2);
+    v[1].getInt() = 99;
+    REQUIRE(v[1].getInt() == 99);
+  }
+
+  SECTION("Modify nested value")
+  {
+    GenericValue v;
+    v["user"]["name"] = "Alice";
+    v["user"]["age"] = 30;
+
+    REQUIRE(v["user"]["age"].getInt() == 30);
+    v["user"]["age"].getInt() += 1;
+    REQUIRE(v["user"]["age"].getInt() == 31);
+  }
+
+  SECTION("Modify array through proxy")
+  {
+    GenericValue v;
+    v["numbers"] = Array{ GenericValue(1), GenericValue(2), GenericValue(3) };
+
+    REQUIRE(v["numbers"].getArray().size() == 3);
+    v["numbers"].getArray().push_back(GenericValue(4));
+    REQUIRE(v["numbers"].getArray().size() == 4);
+    REQUIRE(v["numbers"][3].getInt() == 4);
+  }
+
+  SECTION("Modify object through proxy")
+  {
+    GenericValue v;
+    v["data"] = Object{ {"a", GenericValue(1)}, {"b", GenericValue(2)} };
+
+    REQUIRE(v["data"].getObject().size() == 2);
+    v["data"].getObject()["c"] = GenericValue(3);
+    REQUIRE(v["data"].getObject().size() == 3);
+    REQUIRE(v["data"]["c"].getInt() == 3);
+  }
+
+  SECTION("Modify value in array at index")
+  {
+    GenericValue v = Array{
+      GenericValue(10),
+      GenericValue(20),
+      GenericValue(30)
+    };
+
+    REQUIRE(v[0].getInt() == 10);
+    v[0].getInt() = 100;
+    REQUIRE(v[0].getInt() == 100);
+
+    REQUIRE(v[2].getInt() == 30);
+    v[2].getInt() *= 2;
+    REQUIRE(v[2].getInt() == 60);
+  }
+
+  SECTION("Modify deeply nested value")
+  {
+    GenericValue v;
+    v["level1"]["level2"]["level3"]["value"] = 42;
+
+    REQUIRE(v["level1"]["level2"]["level3"]["value"].getInt() == 42);
+    v["level1"]["level2"]["level3"]["value"].getInt() = 100;
+    REQUIRE(v["level1"]["level2"]["level3"]["value"].getInt() == 100);
+  }
+
+  SECTION("Modify string in nested array")
+  {
+    GenericValue v;
+    v["users"][0]["name"] = "Alice";
+    v["users"][1]["name"] = "Bob";
+
+    REQUIRE(v["users"][0]["name"].getString() == "Alice");
+    v["users"][0]["name"].getString() = "Charlie";
+    REQUIRE(v["users"][0]["name"].getString() == "Charlie");
+  }
+
+  SECTION("Cannot modify through const access")
+  {
+    GenericValue v;
+    v["num"] = 42;
+
+    const GenericValue& cv = v;
+    // This should compile and work (const access)
+    REQUIRE(cv["num"].getInt() == 42);
+
+    // The following would not compile (mutable access on const):
+    // cv["num"].getInt() = 100;  // Compilation error - good!
+  }
+
+  SECTION("Modify multiple values")
+  {
+    GenericValue v;
+    v["a"] = 1;
+    v["b"] = 2.5;
+    v["c"] = "hello";
+    v["d"] = true;
+
+    v["a"].getInt() = 10;
+    v["b"].getDouble() = 5.5;
+    v["c"].getString() = "world";
+    v["d"].getBool() = false;
+
+    REQUIRE(v["a"].getInt() == 10);
+    REQUIRE(v["b"].getDouble() == 5.5);
+    REQUIRE(v["c"].getString() == "world");
+    REQUIRE(v["d"].getBool() == false);
+  }
+}
