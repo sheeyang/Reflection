@@ -815,3 +815,93 @@ TEST_CASE("GenericValue mutable getters", "[value][mutable]")
     REQUIRE(v["d"].getBool() == false);
   }
 }
+
+TEST_CASE("GenericValue optional conversions", "[value]")
+{
+  SECTION("Optional with value to GenericValue")
+  {
+    std::optional<int> opt = 42;
+    GenericValue v = to_generic_value(opt);
+    REQUIRE(v.isInt());
+    REQUIRE(v.getInt() == 42);
+  }
+
+  SECTION("Empty optional to GenericValue")
+  {
+    std::optional<int> opt = std::nullopt;
+    GenericValue v = to_generic_value(opt);
+    REQUIRE(v.isNull());
+  }
+
+  SECTION("Optional string to GenericValue")
+  {
+    std::optional<std::string> opt = "hello";
+    GenericValue v = to_generic_value(opt);
+    REQUIRE(v.isString());
+    REQUIRE(v.getString() == "hello");
+  }
+
+  SECTION("Optional struct to GenericValue")
+  {
+    std::optional<Simple> opt = Simple{ 42, 3.14f, 2.71 };
+    GenericValue v = to_generic_value(opt);
+    REQUIRE(v.isObject());
+    REQUIRE(v["integerValue"].getInt() == 42);
+  }
+
+  SECTION("GenericValue to optional with value")
+  {
+    GenericValue v(42);
+    std::optional<int> opt;
+    REQUIRE(from_generic_value(opt, v));
+    REQUIRE(opt.has_value());
+    REQUIRE(opt.value() == 42);
+  }
+
+  SECTION("GenericValue null to optional")
+  {
+    GenericValue v;
+    std::optional<int> opt;
+    REQUIRE(from_generic_value(opt, v));
+    REQUIRE_FALSE(opt.has_value());
+  }
+
+  SECTION("Optional roundtrip with value")
+  {
+    std::optional<std::string> original = "test";
+    GenericValue v = to_generic_value(original);
+    std::optional<std::string> restored;
+    REQUIRE(from_generic_value(restored, v));
+    REQUIRE(restored.has_value());
+    REQUIRE(restored.value() == "test");
+  }
+
+  SECTION("Optional roundtrip with nullopt")
+  {
+    std::optional<int> original = std::nullopt;
+    GenericValue v = to_generic_value(original);
+    std::optional<int> restored;
+    REQUIRE(from_generic_value(restored, v));
+    REQUIRE_FALSE(restored.has_value());
+  }
+
+  SECTION("WithOptional struct conversion")
+  {
+    WithOptional original{ 42, "hello", Simple{1, 2.0f, 3.0}, 100 };
+    GenericValue v = to_generic_value(original);
+
+    REQUIRE(v.isObject());
+    REQUIRE(v["optionalInt"].getInt() == 42);
+    REQUIRE(v["optionalString"].getString() == "hello");
+    REQUIRE(v["optionalStruct"]["integerValue"].getInt() == 1);
+    REQUIRE(v["regularInt"].getInt() == 100);
+
+    WithOptional restored;
+    REQUIRE(from_generic_value(restored, v));
+    REQUIRE(restored.optionalInt.has_value());
+    REQUIRE(restored.optionalInt.value() == 42);
+    REQUIRE(restored.optionalString.has_value());
+    REQUIRE(restored.optionalString.value() == "hello");
+    REQUIRE(restored.regularInt == 100);
+  }
+}

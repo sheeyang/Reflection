@@ -752,3 +752,77 @@ TEST_CASE("JSON serialize/deserialize EmptyStruct", "[json]")
     REQUIRE(result.has_value());
   }
 }
+
+TEST_CASE("JSON serialize/deserialize WithOptional struct", "[json]")
+{
+  SECTION("Serialize with all values present")
+  {
+    WithOptional obj{ 42, "hello", Simple{1, 2.0f, 3.0}, 100 };
+    std::string json = ReflectionLibrary::to_json(obj);
+    REQUIRE_FALSE(json.empty());
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("optionalInt"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("42"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("optionalString"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("hello"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("regularInt"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("100"));
+  }
+
+  SECTION("Serialize with empty optionals")
+  {
+    WithOptional obj{ std::nullopt, std::nullopt, std::nullopt, 100 };
+    std::string json = ReflectionLibrary::to_json(obj);
+    REQUIRE_FALSE(json.empty());
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("regularInt"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("100"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("null"));
+  }
+
+  SECTION("Roundtrip with all values present")
+  {
+    WithOptional original{ 42, "hello", Simple{1, 2.0f, 3.0}, 100 };
+    std::string json = ReflectionLibrary::to_json(original);
+    auto result = ReflectionLibrary::from_json<WithOptional>(json);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->regularInt == 100);
+    REQUIRE(result->optionalInt.has_value());
+    REQUIRE(result->optionalInt.value() == 42);
+    REQUIRE(result->optionalString.has_value());
+    REQUIRE(result->optionalString.value() == "hello");
+    REQUIRE(result->optionalStruct.has_value());
+    REQUIRE(result->optionalStruct.value().integerValue == 1);
+    REQUIRE(result->optionalStruct.value().floatValue == 2.0f);
+    REQUIRE(result->optionalStruct.value().doubleValue == 3.0);
+  }
+
+  SECTION("Roundtrip with empty optionals")
+  {
+    WithOptional original{ std::nullopt, std::nullopt, std::nullopt, 100 };
+    std::string json = ReflectionLibrary::to_json(original);
+    auto result = ReflectionLibrary::from_json<WithOptional>(json);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->regularInt == 100);
+    REQUIRE_FALSE(result->optionalInt.has_value());
+    REQUIRE_FALSE(result->optionalString.has_value());
+    REQUIRE_FALSE(result->optionalStruct.has_value());
+  }
+
+  SECTION("Roundtrip with mixed optionals")
+  {
+    WithOptional original{ 42, std::nullopt, Simple{5, 6.0f, 7.0}, 200 };
+    std::string json = ReflectionLibrary::to_json(original);
+    auto result = ReflectionLibrary::from_json<WithOptional>(json);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->regularInt == 200);
+    REQUIRE(result->optionalInt.has_value());
+    REQUIRE(result->optionalInt.value() == 42);
+    REQUIRE_FALSE(result->optionalString.has_value());
+    REQUIRE(result->optionalStruct.has_value());
+    REQUIRE(result->optionalStruct.value().integerValue == 5);
+    REQUIRE(result->optionalStruct.value().floatValue == 6.0f);
+    REQUIRE(result->optionalStruct.value().doubleValue == 7.0);
+  }
+}

@@ -313,3 +313,66 @@ TEST_CASE("Print EmptyStruct", "[print]")
 
   REQUIRE(output == expected);
 }
+
+TEST_CASE("Print WithOptional struct", "[print]")
+{
+  SECTION("With all values present")
+  {
+    WithOptional obj{ 42, "hello", Simple{1, 2.0f, 3.0}, 100 };
+
+    CaptureStdout capture;
+    ReflectionLibrary::print(obj);
+    std::string output = capture.get_output();
+
+    std::string expected = R"(Type: WithOptional
+  optionalInt = 42
+  optionalString = "hello"
+  optionalStruct (Simple):
+    integerValue = 1
+    floatValue = 2
+    doubleValue = 3
+  regularInt = 100
+)";
+
+    REQUIRE(output == expected);
+  }
+
+  SECTION("With empty optionals")
+  {
+    WithOptional obj{ std::nullopt, std::nullopt, std::nullopt, 100 };
+
+    CaptureStdout capture;
+    ReflectionLibrary::print(obj);
+    std::string output = capture.get_output();
+
+    std::string expected = R"(Type: WithOptional
+  optionalInt = <null>
+  optionalString = <null>
+  optionalStruct = <null>
+  regularInt = 100
+)";
+
+    REQUIRE(output == expected);
+  }
+
+  SECTION("With mixed optionals")
+  {
+    WithOptional obj{ 42, std::nullopt, Simple{5, 6.0f, 7.0}, 200 };
+
+    CaptureStdout capture;
+    ReflectionLibrary::print(obj);
+    std::string output = capture.get_output();
+
+    std::string expected = R"(Type: WithOptional
+  optionalInt = 42
+  optionalString = <null>
+  optionalStruct (Simple):
+    integerValue = 5
+    floatValue = 6
+    doubleValue = 7
+  regularInt = 200
+)";
+
+    REQUIRE(output == expected);
+  }
+}
