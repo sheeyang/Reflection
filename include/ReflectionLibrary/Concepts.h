@@ -3,6 +3,7 @@
 #include <type_traits>
 #include <concepts>
 #include <array>
+#include <optional>
 
 namespace ReflectionLibrary
 {
@@ -30,6 +31,16 @@ namespace ReflectionLibrary
   // Check if a type is iterable (has size, begin, end)
   template <typename T>
   concept is_iterable_v = requires(T value) { value.size(); value.begin(); value.end(); };
+
+  // Check if a type is std::optional
+  template <typename T>
+  struct is_optional : std::false_type {};
+
+  template <typename T>
+  struct is_optional<std::optional<T>> : std::true_type {};
+
+  template <typename T>
+  concept is_optional_v = is_optional<T>::value;
 
   template <typename T>
   concept has_reflector_v = requires(const T & obj) {

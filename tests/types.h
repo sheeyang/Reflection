@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <optional>
 
 struct Simple
 {
@@ -116,3 +117,12 @@ struct EmptyStruct
 {
 };
 REFLECT_FIELDS(EmptyStruct)
+
+struct WithOptional
+{
+  std::optional<int> optionalInt;
+  std::optional<std::string> optionalString;
+  std::optional<Simple> optionalStruct;
+  int regularInt;
+};
+REFLECT_FIELDS(WithOptional, optionalInt, optionalString, optionalStruct, regularInt)
