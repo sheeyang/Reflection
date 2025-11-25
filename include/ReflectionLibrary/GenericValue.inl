@@ -444,6 +444,59 @@ namespace ReflectionLibrary
   inline const GenericValue::VariantType& GenericValue::variant() const { return data_; }
   inline GenericValue::VariantType& GenericValue::variant() { return data_; }
 
+  // Comparison operators
+  inline bool GenericValue::operator==(const GenericValue& other) const
+  {
+    // First check if types are the same
+    if (data_.index() != other.data_.index())
+      return false;
+
+    // Compare based on type
+    if (isNull())
+      return true; // Both are null
+    else if (isBool())
+      return getBool() == other.getBool();
+    else if (isInt())
+      return getInt() == other.getInt();
+    else if (isDouble())
+      return getDouble() == other.getDouble();
+    else if (isString())
+      return getString() == other.getString();
+    else if (isArray())
+    {
+      const auto& arr1 = getArray();
+      const auto& arr2 = other.getArray();
+      if (arr1.size() != arr2.size())
+        return false;
+      for (size_t i = 0; i < arr1.size(); ++i)
+      {
+        if (arr1[i] != arr2[i]) // Recursive comparison
+          return false;
+      }
+      return true;
+    }
+    else if (isObject())
+    {
+      const auto& obj1 = getObject();
+      const auto& obj2 = other.getObject();
+      if (obj1.size() != obj2.size())
+        return false;
+      for (const auto& [key, value] : obj1)
+      {
+        auto it = obj2.find(key);
+        if (it == obj2.end() || value != it->second) // Recursive comparison
+          return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  inline bool GenericValue::operator!=(const GenericValue& other) const
+  {
+    return !(*this == other);
+  }
+
   // Convert any C++ type to GenericValue
   template <typename T>
   inline GenericValue to_generic_value(const T& obj)
@@ -524,7 +577,9 @@ namespace ReflectionLibrary
       auto& obj_ref = const_cast<ValueType&>(obj);
       for_each_field(obj_ref, [&](std::string_view name, auto& field_value, int)
         { result[std::string(name)] = to_generic_value(field_value); });
-      return GenericValue(std::move(result));
+      GenericValue gv(std::move(result));
+      gv.type_hint = std::string(class_name<ValueType>);
+      return gv;
     }
     else
     {
@@ -674,6 +729,37 @@ namespace ReflectionLibrary
     return result;
   }
 
+  inline GenericValue convert_array_of_pairs_to_map(const GenericValue& array_value)
+  {
+    if (!array_value.isArray()) return GenericValue(Object{});
+
+    Object result;
+    const auto& arr = array_value.getArray();
+    for (const auto& item : arr) {
+      if (item.isObject() && item.has("first") && item.has("second")) {
+        const auto& key = item["first"];
+        if (key.isString()) {
+          result[key.getString()] = item["second"];
+        }
+      }
+    }
+    return GenericValue(std::move(result));
+  }
+
+  inline GenericValue convert_map_to_array_of_pairs(const GenericValue& map_value)
+  {
+    if (!map_value.isObject()) return GenericValue(Array{});
+
+    Array result;
+    const auto& obj = map_value.getObject();
+    for (const auto& [key, val] : obj) {
+      Object pair;
+      pair["first"] = GenericValue(key);
+      pair["second"] = val;
+      result.push_back(GenericValue(std::move(pair)));
+    }
+    return GenericValue(std::move(result));
+  }
 
 
 } // namespace ReflectionLibrary
