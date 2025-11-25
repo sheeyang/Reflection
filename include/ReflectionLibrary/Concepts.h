@@ -7,9 +7,12 @@
 
 namespace ReflectionLibrary
 {
-  // Forward declaration
+  // Forward declarations
   template <typename T>
   struct ReflectionInfo;
+
+  template <typename T>
+  struct EnumInfo;
 
   // Check if a type is reflectable
   template <typename T>
@@ -18,6 +21,13 @@ namespace ReflectionLibrary
     ReflectionInfo<T>::fields;
     ReflectionInfo<T>::reflect;
     ReflectionInfo<T>::create;
+  };
+
+  // Check if a type is a reflected enum
+  template <typename T>
+  concept is_reflected_enum_v = std::is_enum_v<T> && requires {
+    EnumInfo<T>::enum_name;
+    EnumInfo<T>::values;
   };
 
   // Check if a type is a std::tuple

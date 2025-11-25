@@ -516,6 +516,11 @@ namespace ReflectionLibrary
       }
       return to_generic_value(obj.value());
     }
+    else if constexpr (is_reflected_enum_v<ValueType>)
+    {
+      // Handle reflected enums - convert to string
+      return GenericValue(std::string(enum_to_string(obj)));
+    }
     else if constexpr (std::is_same_v<ValueType, bool>)
     {
       return GenericValue(obj);
@@ -610,6 +615,17 @@ namespace ReflectionLibrary
       if (!from_generic_value(inner_value, value))
         return false;
       obj = std::move(inner_value);
+      return true;
+    }
+    else if constexpr (is_reflected_enum_v<ValueType>)
+    {
+      // Handle reflected enums - convert from string
+      if (!value.isString())
+        return false;
+      auto enum_opt = string_to_enum<ValueType>(value.getString());
+      if (!enum_opt)
+        return false;
+      obj = *enum_opt;
       return true;
     }
     else if constexpr (std::is_same_v<ValueType, bool>)

@@ -126,3 +126,29 @@ struct WithOptional
   int regularInt;
 };
 REFLECT_FIELDS(WithOptional, optionalInt, optionalString, optionalStruct, regularInt)
+
+enum class Color
+{
+  Red,
+  Green,
+  Blue,
+  Yellow
+};
+REFLECT_ENUM(Color, Red, Green, Blue, Yellow)
+
+enum class Status
+{
+  Pending,
+  Active,
+  Completed,
+  Cancelled
+};
+REFLECT_ENUM(Status, Pending, Active, Completed, Cancelled)
+
+struct WithEnum
+{
+  Color color;
+  Status status;
+  int value;
+};
+REFLECT_FIELDS(WithEnum, color, status, value)
