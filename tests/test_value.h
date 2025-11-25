@@ -905,3 +905,464 @@ TEST_CASE("GenericValue optional conversions", "[value]")
     REQUIRE(restored.regularInt == 100);
   }
 }
+
+TEST_CASE("GenericValue comparison operators with type_hint", "[generic_value]")
+{
+  SECTION("Comparing values without type_hint")
+  {
+    GenericValue v1(42);
+    GenericValue v2(42);
+    REQUIRE(v1 == v2);
+    REQUIRE_FALSE(v1 != v2);
+  }
+
+  SECTION("Comparing values with same type_hint")
+  {
+    GenericValue v1(42);
+    v1.type_hint = "Integer";
+    GenericValue v2(42);
+    v2.type_hint = "Integer";
+    REQUIRE(v1 == v2);
+    REQUIRE_FALSE(v1 != v2);
+  }
+
+  SECTION("Comparing values with different type_hint")
+  {
+    GenericValue v1(42);
+    v1.type_hint = "Integer";
+    GenericValue v2(42);
+    v2.type_hint = "Long";
+    REQUIRE_FALSE(v1 == v2);
+    REQUIRE(v1 != v2);
+  }
+
+  SECTION("Comparing values with one having type_hint")
+  {
+    GenericValue v1(42);
+    v1.type_hint = "Integer";
+    GenericValue v2(42);
+    REQUIRE_FALSE(v1 == v2);
+    REQUIRE(v1 != v2);
+  }
+
+  SECTION("Comparing strings with type_hint")
+  {
+    GenericValue v1("test");
+    v1.type_hint = "std::string";
+    GenericValue v2("test");
+    v2.type_hint = "std::string";
+    REQUIRE(v1 == v2);
+
+    GenericValue v3("test");
+    v3.type_hint = "char*";
+    REQUIRE_FALSE(v1 == v3);
+  }
+
+  SECTION("Comparing arrays with type_hint")
+  {
+    Array arr1 = { GenericValue(1), GenericValue(2), GenericValue(3) };
+    GenericValue v1(arr1);
+    v1.type_hint = "std::vector<int>";
+
+    Array arr2 = { GenericValue(1), GenericValue(2), GenericValue(3) };
+    GenericValue v2(arr2);
+    v2.type_hint = "std::vector<int>";
+
+    REQUIRE(v1 == v2);
+
+    GenericValue v3(arr2);
+    v3.type_hint = "std::array<int, 3>";
+    REQUIRE_FALSE(v1 == v3);
+  }
+
+  SECTION("Comparing objects with type_hint")
+  {
+    Object obj1;
+    obj1["name"] = GenericValue("Alice");
+    obj1["age"] = GenericValue(30);
+    GenericValue v1(obj1);
+    v1.type_hint = "Person";
+
+    Object obj2;
+    obj2["name"] = GenericValue("Alice");
+    obj2["age"] = GenericValue(30);
+    GenericValue v2(obj2);
+    v2.type_hint = "Person";
+
+    REQUIRE(v1 == v2);
+
+    GenericValue v3(obj2);
+    v3.type_hint = "Employee";
+    REQUIRE_FALSE(v1 == v3);
+  }
+
+  SECTION("Comparing different types always returns false")
+  {
+    GenericValue v1(42);
+    GenericValue v2(42.0);
+    REQUIRE_FALSE(v1 == v2);
+    REQUIRE(v1 != v2);
+  }
+
+  SECTION("Comparing null values with type_hint")
+  {
+    GenericValue v1;
+    v1.type_hint = "optional<int>";
+    GenericValue v2;
+    v2.type_hint = "optional<int>";
+    REQUIRE(v1 == v2);
+
+    GenericValue v3;
+    v3.type_hint = "optional<string>";
+    REQUIRE_FALSE(v1 == v3);
+  }
+}
+
+TEST_CASE("convert_array_of_pairs_to_map", "[generic_value]")
+{
+  SECTION("Convert valid array of pairs to map")
+  {
+    Array pairs;
+
+    Object pair1;
+    pair1["first"] = GenericValue("name");
+    pair1["second"] = GenericValue("Alice");
+    pairs.push_back(GenericValue(pair1));
+
+    Object pair2;
+    pair2["first"] = GenericValue("age");
+    pair2["second"] = GenericValue(30);
+    pairs.push_back(GenericValue(pair2));
+
+    Object pair3;
+    pair3["first"] = GenericValue("city");
+    pair3["second"] = GenericValue("New York");
+    pairs.push_back(GenericValue(pair3));
+
+    GenericValue array_value(pairs);
+    GenericValue map_value = convert_array_of_pairs_to_map(array_value);
+
+    REQUIRE(map_value.isObject());
+    REQUIRE(map_value.size() == 3);
+    REQUIRE(map_value.has("name"));
+    REQUIRE(map_value["name"].getString() == "Alice");
+    REQUIRE(map_value.has("age"));
+    REQUIRE(map_value["age"].getInt() == 30);
+    REQUIRE(map_value.has("city"));
+    REQUIRE(map_value["city"].getString() == "New York");
+  }
+
+  SECTION("Convert empty array to empty map")
+  {
+    Array empty_array;
+    GenericValue array_value(empty_array);
+    GenericValue map_value = convert_array_of_pairs_to_map(array_value);
+
+    REQUIRE(map_value.isObject());
+    REQUIRE(map_value.size() == 0);
+  }
+
+  SECTION("Convert array with non-object items (should skip them)")
+  {
+    Array mixed;
+
+    Object pair1;
+    pair1["first"] = GenericValue("key1");
+    pair1["second"] = GenericValue("value1");
+    mixed.push_back(GenericValue(pair1));
+
+    mixed.push_back(GenericValue(42)); // Not an object
+    mixed.push_back(GenericValue("string")); // Not an object
+
+    Object pair2;
+    pair2["first"] = GenericValue("key2");
+    pair2["second"] = GenericValue("value2");
+    mixed.push_back(GenericValue(pair2));
+
+    GenericValue array_value(mixed);
+    GenericValue map_value = convert_array_of_pairs_to_map(array_value);
+
+    REQUIRE(map_value.isObject());
+    REQUIRE(map_value.size() == 2);
+    REQUIRE(map_value.has("key1"));
+    REQUIRE(map_value.has("key2"));
+  }
+
+  SECTION("Convert array with objects missing 'first' or 'second' (should skip them)")
+  {
+    Array incomplete;
+
+    Object pair1;
+    pair1["first"] = GenericValue("key1");
+    pair1["second"] = GenericValue("value1");
+    incomplete.push_back(GenericValue(pair1));
+
+    Object missing_second;
+    missing_second["first"] = GenericValue("key2");
+    incomplete.push_back(GenericValue(missing_second));
+
+    Object missing_first;
+    missing_first["second"] = GenericValue("value3");
+    incomplete.push_back(GenericValue(missing_first));
+
+    GenericValue array_value(incomplete);
+    GenericValue map_value = convert_array_of_pairs_to_map(array_value);
+
+    REQUIRE(map_value.isObject());
+    REQUIRE(map_value.size() == 1);
+    REQUIRE(map_value.has("key1"));
+  }
+
+  SECTION("Convert array with non-string keys (should skip them)")
+  {
+    Array non_string_keys;
+
+    Object pair1;
+    pair1["first"] = GenericValue(42); // Non-string key
+    pair1["second"] = GenericValue("value1");
+    non_string_keys.push_back(GenericValue(pair1));
+
+    Object pair2;
+    pair2["first"] = GenericValue("valid_key");
+    pair2["second"] = GenericValue("value2");
+    non_string_keys.push_back(GenericValue(pair2));
+
+    GenericValue array_value(non_string_keys);
+    GenericValue map_value = convert_array_of_pairs_to_map(array_value);
+
+    REQUIRE(map_value.isObject());
+    REQUIRE(map_value.size() == 1);
+    REQUIRE(map_value.has("valid_key"));
+  }
+
+  SECTION("Convert non-array value returns empty map")
+  {
+    GenericValue not_array(42);
+    GenericValue map_value = convert_array_of_pairs_to_map(not_array);
+
+    REQUIRE(map_value.isObject());
+    REQUIRE(map_value.size() == 0);
+  }
+
+  SECTION("Convert array with complex values")
+  {
+    Array pairs;
+
+    Object pair1;
+    pair1["first"] = GenericValue("numbers");
+    Array numbers = { GenericValue(1), GenericValue(2), GenericValue(3) };
+    pair1["second"] = GenericValue(numbers);
+    pairs.push_back(GenericValue(pair1));
+
+    Object pair2;
+    pair2["first"] = GenericValue("nested");
+    Object nested_obj;
+    nested_obj["x"] = GenericValue(10);
+    nested_obj["y"] = GenericValue(20);
+    pair2["second"] = GenericValue(nested_obj);
+    pairs.push_back(GenericValue(pair2));
+
+    GenericValue array_value(pairs);
+    GenericValue map_value = convert_array_of_pairs_to_map(array_value);
+
+    REQUIRE(map_value.isObject());
+    REQUIRE(map_value.size() == 2);
+    REQUIRE(map_value.has("numbers"));
+    REQUIRE(map_value["numbers"].isArray());
+    REQUIRE(map_value["numbers"].size() == 3);
+    REQUIRE(map_value.has("nested"));
+    REQUIRE(map_value["nested"].isObject());
+    REQUIRE(map_value["nested"]["x"].getInt() == 10);
+  }
+}
+
+TEST_CASE("convert_map_to_array_of_pairs", "[generic_value]")
+{
+  SECTION("Convert valid map to array of pairs")
+  {
+    Object map;
+    map["name"] = GenericValue("Bob");
+    map["age"] = GenericValue(25);
+    map["city"] = GenericValue("Boston");
+
+    GenericValue map_value(map);
+    GenericValue array_value = convert_map_to_array_of_pairs(map_value);
+
+    REQUIRE(array_value.isArray());
+    REQUIRE(array_value.size() == 3);
+
+    // Check that all pairs are present (order may vary due to unordered_map)
+    const auto& arr = array_value.getArray();
+    bool found_name = false, found_age = false, found_city = false;
+
+    for (const auto& item : arr)
+    {
+      REQUIRE(item.isObject());
+      REQUIRE(item.has("first"));
+      REQUIRE(item.has("second"));
+      REQUIRE(item["first"].isString());
+
+      std::string key = item["first"].getString();
+      if (key == "name")
+      {
+        found_name = true;
+        REQUIRE(item["second"].getString() == "Bob");
+      }
+      else if (key == "age")
+      {
+        found_age = true;
+        REQUIRE(item["second"].getInt() == 25);
+      }
+      else if (key == "city")
+      {
+        found_city = true;
+        REQUIRE(item["second"].getString() == "Boston");
+      }
+    }
+
+    REQUIRE(found_name);
+    REQUIRE(found_age);
+    REQUIRE(found_city);
+  }
+
+  SECTION("Convert empty map to empty array")
+  {
+    Object empty_map;
+    GenericValue map_value(empty_map);
+    GenericValue array_value = convert_map_to_array_of_pairs(map_value);
+
+    REQUIRE(array_value.isArray());
+    REQUIRE(array_value.size() == 0);
+  }
+
+  SECTION("Convert non-object value returns empty array")
+  {
+    GenericValue not_object(42);
+    GenericValue array_value = convert_map_to_array_of_pairs(not_object);
+
+    REQUIRE(array_value.isArray());
+    REQUIRE(array_value.size() == 0);
+  }
+
+  SECTION("Convert map with complex values")
+  {
+    Object map;
+
+    Array numbers = { GenericValue(1), GenericValue(2), GenericValue(3) };
+    map["numbers"] = GenericValue(numbers);
+
+    Object nested_obj;
+    nested_obj["x"] = GenericValue(100);
+    nested_obj["y"] = GenericValue(200);
+    map["nested"] = GenericValue(nested_obj);
+
+    GenericValue map_value(map);
+    GenericValue array_value = convert_map_to_array_of_pairs(map_value);
+
+    REQUIRE(array_value.isArray());
+    REQUIRE(array_value.size() == 2);
+
+    const auto& arr = array_value.getArray();
+    bool found_numbers = false, found_nested = false;
+
+    for (const auto& item : arr)
+    {
+      REQUIRE(item.isObject());
+      REQUIRE(item.has("first"));
+      REQUIRE(item.has("second"));
+
+      std::string key = item["first"].getString();
+      if (key == "numbers")
+      {
+        found_numbers = true;
+        REQUIRE(item["second"].isArray());
+        REQUIRE(item["second"].size() == 3);
+      }
+      else if (key == "nested")
+      {
+        found_nested = true;
+        REQUIRE(item["second"].isObject());
+        REQUIRE(item["second"]["x"].getInt() == 100);
+        REQUIRE(item["second"]["y"].getInt() == 200);
+      }
+    }
+
+    REQUIRE(found_numbers);
+    REQUIRE(found_nested);
+  }
+
+  SECTION("Round-trip conversion: map -> array -> map")
+  {
+    Object original_map;
+    original_map["alpha"] = GenericValue("A");
+    original_map["beta"] = GenericValue(2);
+    original_map["gamma"] = GenericValue(3.14);
+
+    GenericValue map_value(original_map);
+    GenericValue array_value = convert_map_to_array_of_pairs(map_value);
+    GenericValue reconstructed_map = convert_array_of_pairs_to_map(array_value);
+
+    REQUIRE(reconstructed_map.isObject());
+    REQUIRE(reconstructed_map.size() == 3);
+    REQUIRE(reconstructed_map.has("alpha"));
+    REQUIRE(reconstructed_map["alpha"].getString() == "A");
+    REQUIRE(reconstructed_map.has("beta"));
+    REQUIRE(reconstructed_map["beta"].getInt() == 2);
+    REQUIRE(reconstructed_map.has("gamma"));
+    REQUIRE(reconstructed_map["gamma"].getDouble() == 3.14);
+  }
+}
+
+TEST_CASE("convert functions integration with to_generic_value", "[generic_value]")
+{
+  SECTION("Convert std::map to GenericValue and use array_of_pairs conversion")
+  {
+    std::map<std::string, int> cpp_map = {
+      {"one", 1},
+      {"two", 2},
+      {"three", 3}
+    };
+
+    GenericValue gv = to_generic_value(cpp_map);
+
+    // The map is stored as an array of pairs
+    REQUIRE(gv.isArray());
+
+    // Convert it to a GenericValue Object
+    GenericValue map_value = convert_array_of_pairs_to_map(gv);
+
+    REQUIRE(map_value.isObject());
+    REQUIRE(map_value.size() == 3);
+    REQUIRE(map_value.has("one"));
+    REQUIRE(map_value["one"].getInt() == 1);
+    REQUIRE(map_value.has("two"));
+    REQUIRE(map_value["two"].getInt() == 2);
+    REQUIRE(map_value.has("three"));
+    REQUIRE(map_value["three"].getInt() == 3);
+  }
+
+  SECTION("Convert GenericValue Object to array format for deserialization")
+  {
+    Object obj;
+    obj["x"] = GenericValue(10);
+    obj["y"] = GenericValue(20);
+    obj["z"] = GenericValue(30);
+
+    GenericValue map_value(obj);
+    GenericValue array_value = convert_map_to_array_of_pairs(map_value);
+
+    // Now this array can be deserialized into a std::map
+    REQUIRE(array_value.isArray());
+    REQUIRE(array_value.size() == 3);
+
+    // Verify structure
+    const auto& arr = array_value.getArray();
+    for (const auto& item : arr)
+    {
+      REQUIRE(item.isObject());
+      REQUIRE(item.has("first"));
+      REQUIRE(item.has("second"));
+      REQUIRE(item["first"].isString());
+    }
+  }
+}

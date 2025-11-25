@@ -447,7 +447,11 @@ namespace ReflectionLibrary
   // Comparison operators
   inline bool GenericValue::operator==(const GenericValue& other) const
   {
-    // First check if types are the same
+    // First check if type_hints are the same
+    if (type_hint != other.type_hint)
+      return false;
+
+    // Then check if types are the same
     if (data_.index() != other.data_.index())
       return false;
 
