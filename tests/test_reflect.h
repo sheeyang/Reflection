@@ -380,3 +380,78 @@ TEST_CASE("WithOptional struct reflection", "[reflection]")
     REQUIRE(obj.regularInt == 100);
   }
 }
+
+TEST_CASE("Namespaced struct reflection", "[reflection][namespace]")
+{
+  using namespace TestNamespace;
+
+  SECTION("NamespacedSimple class name")
+  {
+    NamespacedSimple obj{ 42, 3.14, "test" };
+    REQUIRE(ReflectionLibrary::class_name<NamespacedSimple> == std::string("TestNamespace::NamespacedSimple"));
+    REQUIRE(ReflectionLibrary::get_class_name(obj) == "TestNamespace::NamespacedSimple");
+  }
+
+  SECTION("NamespacedSimple field count")
+  {
+    REQUIRE(ReflectionLibrary::field_count<NamespacedSimple> == 3);
+  }
+
+  SECTION("NamespacedSimple set field value")
+  {
+    NamespacedSimple obj{ 1, 2.0, "original" };
+    ReflectionLibrary::set_field_value(obj, "x", 100);
+    ReflectionLibrary::set_field_value(obj, "y", 9.99);
+    ReflectionLibrary::set_field_value(obj, "name", std::string("updated"));
+    REQUIRE(obj.x == 100);
+    REQUIRE(obj.y == 9.99);
+    REQUIRE(obj.name == "updated");
+  }
+
+  SECTION("NamespacedNested field iteration")
+  {
+    NamespacedNested obj{ {10, 20.5, "nested"}, 5 };
+    std::vector<std::string> names;
+    ReflectionLibrary::for_each_field(obj, [&](std::string_view name, auto& value, int nest_level)
+      {
+        names.push_back(std::string(name)); });
+    REQUIRE(names.size() == 2);
+    REQUIRE(names == std::vector<std::string>{"simple", "count"});
+  }
+
+  SECTION("NamespacedComplex with collections")
+  {
+    NamespacedComplex obj{ {1, 2, 3}, {{"pi", 3.14}, {"e", 2.71}}, "optional_value" };
+    REQUIRE(ReflectionLibrary::get_field_count(obj) == 3);
+    REQUIRE(obj.numbers.size() == 3);
+    REQUIRE(obj.values.size() == 2);
+    REQUIRE(obj.optionalText.has_value());
+  }
+}
+
+TEST_CASE("Deep namespaced struct reflection", "[reflection][namespace]")
+{
+  using namespace Outer::Inner;
+
+  SECTION("DeepNamespacedStruct class name")
+  {
+    DeepNamespacedStruct obj{ 123, "deep test" };
+    REQUIRE(ReflectionLibrary::class_name<DeepNamespacedStruct> == std::string("Outer::Inner::DeepNamespacedStruct"));
+    REQUIRE(ReflectionLibrary::get_class_name(obj) == "Outer::Inner::DeepNamespacedStruct");
+  }
+
+  SECTION("DeepNamespacedStruct field count")
+  {
+    REQUIRE(ReflectionLibrary::field_count<DeepNamespacedStruct> == 2);
+  }
+
+  SECTION("DeepNamespacedStruct field access")
+  {
+    DeepNamespacedStruct obj{ 456, "description text" };
+    std::vector<std::string> names;
+    ReflectionLibrary::for_each_field(obj, [&](std::string_view name, auto& value, int nest_level)
+      {
+        names.push_back(std::string(name)); });
+    REQUIRE(names == std::vector<std::string>{"id", "description"});
+  }
+}

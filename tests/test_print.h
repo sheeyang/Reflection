@@ -376,3 +376,94 @@ TEST_CASE("Print WithOptional struct", "[print]")
     REQUIRE(output == expected);
   }
 }
+
+TEST_CASE("Print namespaced struct", "[print][namespace]")
+{
+  using namespace TestNamespace;
+
+  SECTION("NamespacedSimple")
+  {
+    NamespacedSimple obj{ 42, 3.14, "test" };
+
+    CaptureStdout capture;
+    ReflectionLibrary::print(obj);
+    std::string output = capture.get_output();
+
+    std::string expected = R"(Type: TestNamespace::NamespacedSimple
+  x = 42
+  y = 3.14
+  name = "test"
+)";
+
+    REQUIRE(output == expected);
+  }
+
+  SECTION("NamespacedNested")
+  {
+    NamespacedNested obj{ {10, 20.5, "nested"}, 5 };
+
+    CaptureStdout capture;
+    ReflectionLibrary::print(obj);
+    std::string output = capture.get_output();
+
+    std::string expected = R"(Type: TestNamespace::NamespacedNested
+  simple (TestNamespace::NamespacedSimple):
+    x = 10
+    y = 20.5
+    name = "nested"
+  count = 5
+)";
+
+    REQUIRE(output == expected);
+  }
+
+  SECTION("NamespacedComplex")
+  {
+    NamespacedComplex obj{ {1, 2, 3}, {{"pi", 3.14}, {"e", 2.71}}, "optional_value" };
+
+    CaptureStdout capture;
+    ReflectionLibrary::print(obj);
+    std::string output = capture.get_output();
+
+    // Note: map order may vary, so we check for key components
+    REQUIRE(output.find("Type: TestNamespace::NamespacedComplex") != std::string::npos);
+    REQUIRE(output.find("numbers = [") != std::string::npos);
+    REQUIRE(output.find("values = [") != std::string::npos);
+    REQUIRE(output.find("optionalText = \"optional_value\"") != std::string::npos);
+  }
+
+  SECTION("NamespacedWithEnum")
+  {
+    NamespacedWithEnum obj{ NamespacedColor::Blue, NamespacedStatus::Running, 99 };
+
+    CaptureStdout capture;
+    ReflectionLibrary::print(obj);
+    std::string output = capture.get_output();
+
+    std::string expected = R"(Type: TestNamespace::NamespacedWithEnum
+  color = Blue
+  status = Running
+  value = 99
+)";
+
+    REQUIRE(output == expected);
+  }
+}
+
+TEST_CASE("Print deep namespaced struct", "[print][namespace]")
+{
+  using namespace Outer::Inner;
+
+  DeepNamespacedStruct obj{ 123, "deep test" };
+
+  CaptureStdout capture;
+  ReflectionLibrary::print(obj);
+  std::string output = capture.get_output();
+
+  std::string expected = R"(Type: Outer::Inner::DeepNamespacedStruct
+  id = 123
+  description = "deep test"
+)";
+
+  REQUIRE(output == expected);
+}

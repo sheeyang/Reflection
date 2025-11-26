@@ -412,3 +412,193 @@ TEST_CASE("Enum reflection - enum in collections", "[enum]")
     REQUIRE(colors[1] == Color::Yellow);
   }
 }
+
+TEST_CASE("Namespaced enum reflection - is_reflected_enum_v concept", "[enum][namespace]")
+{
+  using namespace TestNamespace;
+
+  SECTION("Reflected namespaced enums")
+  {
+    REQUIRE(is_reflected_enum_v<NamespacedColor> == true);
+    REQUIRE(is_reflected_enum_v<NamespacedStatus> == true);
+  }
+
+  SECTION("Deep namespaced enum")
+  {
+    using namespace Outer::Inner;
+    REQUIRE(is_reflected_enum_v<DeepNamespacedEnum> == true);
+  }
+}
+
+TEST_CASE("Namespaced enum reflection - enum_to_string", "[enum][namespace]")
+{
+  using namespace TestNamespace;
+
+  SECTION("NamespacedColor enum")
+  {
+    REQUIRE(enum_to_string(NamespacedColor::Red) == "Red");
+    REQUIRE(enum_to_string(NamespacedColor::Green) == "Green");
+    REQUIRE(enum_to_string(NamespacedColor::Blue) == "Blue");
+  }
+
+  SECTION("NamespacedStatus enum")
+  {
+    REQUIRE(enum_to_string(NamespacedStatus::Idle) == "Idle");
+    REQUIRE(enum_to_string(NamespacedStatus::Running) == "Running");
+    REQUIRE(enum_to_string(NamespacedStatus::Stopped) == "Stopped");
+  }
+
+  SECTION("DeepNamespacedEnum")
+  {
+    using namespace Outer::Inner;
+    REQUIRE(enum_to_string(DeepNamespacedEnum::First) == "First");
+    REQUIRE(enum_to_string(DeepNamespacedEnum::Second) == "Second");
+    REQUIRE(enum_to_string(DeepNamespacedEnum::Third) == "Third");
+  }
+}
+
+TEST_CASE("Namespaced enum reflection - string_to_enum", "[enum][namespace]")
+{
+  using namespace TestNamespace;
+
+  SECTION("NamespacedColor - valid strings")
+  {
+    auto red = string_to_enum<NamespacedColor>("Red");
+    REQUIRE(red.has_value());
+    REQUIRE(red.value() == NamespacedColor::Red);
+
+    auto green = string_to_enum<NamespacedColor>("Green");
+    REQUIRE(green.has_value());
+    REQUIRE(green.value() == NamespacedColor::Green);
+
+    auto blue = string_to_enum<NamespacedColor>("Blue");
+    REQUIRE(blue.has_value());
+    REQUIRE(blue.value() == NamespacedColor::Blue);
+  }
+
+  SECTION("NamespacedColor - invalid strings")
+  {
+    auto invalid = string_to_enum<NamespacedColor>("Purple");
+    REQUIRE_FALSE(invalid.has_value());
+  }
+
+  SECTION("NamespacedStatus - valid strings")
+  {
+    auto idle = string_to_enum<NamespacedStatus>("Idle");
+    REQUIRE(idle.has_value());
+    REQUIRE(idle.value() == NamespacedStatus::Idle);
+
+    auto running = string_to_enum<NamespacedStatus>("Running");
+    REQUIRE(running.has_value());
+    REQUIRE(running.value() == NamespacedStatus::Running);
+  }
+
+  SECTION("DeepNamespacedEnum - valid strings")
+  {
+    using namespace Outer::Inner;
+
+    auto first = string_to_enum<DeepNamespacedEnum>("First");
+    REQUIRE(first.has_value());
+    REQUIRE(first.value() == DeepNamespacedEnum::First);
+
+    auto second = string_to_enum<DeepNamespacedEnum>("Second");
+    REQUIRE(second.has_value());
+    REQUIRE(second.value() == DeepNamespacedEnum::Second);
+  }
+}
+
+TEST_CASE("Namespaced enum reflection - enum_value_count", "[enum][namespace]")
+{
+  using namespace TestNamespace;
+
+  SECTION("NamespacedColor count")
+  {
+    REQUIRE(enum_value_count<NamespacedColor> == 3);
+  }
+
+  SECTION("NamespacedStatus count")
+  {
+    REQUIRE(enum_value_count<NamespacedStatus> == 3);
+  }
+
+  SECTION("DeepNamespacedEnum count")
+  {
+    using namespace Outer::Inner;
+    REQUIRE(enum_value_count<DeepNamespacedEnum> == 3);
+  }
+}
+
+TEST_CASE("Namespaced enum reflection - get_enum_name", "[enum][namespace]")
+{
+  using namespace TestNamespace;
+
+  SECTION("NamespacedColor name")
+  {
+    REQUIRE(get_enum_name<NamespacedColor>() == "TestNamespace::NamespacedColor");
+  }
+
+  SECTION("NamespacedStatus name")
+  {
+    REQUIRE(get_enum_name<NamespacedStatus>() == "TestNamespace::NamespacedStatus");
+  }
+
+  SECTION("DeepNamespacedEnum name")
+  {
+    using namespace Outer::Inner;
+    REQUIRE(get_enum_name<DeepNamespacedEnum>() == "Outer::Inner::DeepNamespacedEnum");
+  }
+}
+
+TEST_CASE("Namespaced enum in struct - to_generic_value", "[enum][namespace]")
+{
+  using namespace TestNamespace;
+
+  SECTION("Serialize NamespacedWithEnum")
+  {
+    NamespacedWithEnum obj{ NamespacedColor::Blue, NamespacedStatus::Running, 99 };
+    GenericValue gv = to_generic_value(obj);
+
+    REQUIRE(gv.isObject());
+    REQUIRE(gv["color"].getString() == "Blue");
+    REQUIRE(gv["status"].getString() == "Running");
+    REQUIRE(gv["value"].getInt() == 99);
+  }
+}
+
+TEST_CASE("Namespaced enum in struct - from_generic_value", "[enum][namespace]")
+{
+  using namespace TestNamespace;
+
+  SECTION("Deserialize NamespacedWithEnum")
+  {
+    GenericValue gv;
+    gv["color"] = "Green";
+    gv["status"] = "Idle";
+    gv["value"] = 42;
+
+    NamespacedWithEnum obj;
+    bool success = from_generic_value(obj, gv);
+
+    REQUIRE(success);
+    REQUIRE(obj.color == NamespacedColor::Green);
+    REQUIRE(obj.status == NamespacedStatus::Idle);
+    REQUIRE(obj.value == 42);
+  }
+}
+
+TEST_CASE("Namespaced enum JSON roundtrip", "[enum][namespace]")
+{
+  using namespace TestNamespace;
+
+  SECTION("NamespacedWithEnum roundtrip")
+  {
+    NamespacedWithEnum original{ NamespacedColor::Red, NamespacedStatus::Stopped, 123 };
+    std::string json = to_json(original);
+    auto result = from_json<NamespacedWithEnum>(json);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->color == NamespacedColor::Red);
+    REQUIRE(result->status == NamespacedStatus::Stopped);
+    REQUIRE(result->value == 123);
+  }
+}

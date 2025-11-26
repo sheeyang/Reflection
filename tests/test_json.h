@@ -826,3 +826,115 @@ TEST_CASE("JSON serialize/deserialize WithOptional struct", "[json]")
     REQUIRE(result->optionalStruct.value().doubleValue == 7.0);
   }
 }
+
+TEST_CASE("JSON serialize/deserialize namespaced struct", "[json][namespace]")
+{
+  using namespace TestNamespace;
+
+  SECTION("Serialize NamespacedSimple")
+  {
+    NamespacedSimple obj{ 42, 3.14, "test" };
+    std::string json = ReflectionLibrary::to_json(obj);
+    REQUIRE_FALSE(json.empty());
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("x"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("42"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("y"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("3.14"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("name"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("test"));
+  }
+
+  SECTION("Roundtrip NamespacedSimple")
+  {
+    NamespacedSimple original{ 42, 3.14, "test" };
+    std::string json = ReflectionLibrary::to_json(original);
+    auto result = ReflectionLibrary::from_json<NamespacedSimple>(json);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->x == 42);
+    REQUIRE(result->y == 3.14);
+    REQUIRE(result->name == "test");
+  }
+
+  SECTION("Serialize NamespacedNested")
+  {
+    NamespacedNested obj{ {10, 20.5, "nested"}, 5 };
+    std::string json = ReflectionLibrary::to_json(obj);
+    REQUIRE_FALSE(json.empty());
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("simple"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("count"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("10"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("20.5"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("nested"));
+  }
+
+  SECTION("Roundtrip NamespacedNested")
+  {
+    NamespacedNested original{ {10, 20.5, "nested"}, 5 };
+    std::string json = ReflectionLibrary::to_json(original);
+    auto result = ReflectionLibrary::from_json<NamespacedNested>(json);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->count == 5);
+    REQUIRE(result->simple.x == 10);
+    REQUIRE(result->simple.y == 20.5);
+    REQUIRE(result->simple.name == "nested");
+  }
+
+  SECTION("Roundtrip NamespacedComplex")
+  {
+    NamespacedComplex original{ {1, 2, 3}, {{"pi", 3.14}, {"e", 2.71}}, "optional_value" };
+    std::string json = ReflectionLibrary::to_json(original);
+    auto result = ReflectionLibrary::from_json<NamespacedComplex>(json);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->numbers.size() == 3);
+    REQUIRE(result->numbers[0] == 1);
+    REQUIRE(result->numbers[1] == 2);
+    REQUIRE(result->numbers[2] == 3);
+    REQUIRE(result->values.size() == 2);
+    REQUIRE(result->values["pi"] == 3.14);
+    REQUIRE(result->values["e"] == 2.71);
+    REQUIRE(result->optionalText.has_value());
+    REQUIRE(result->optionalText.value() == "optional_value");
+  }
+
+  SECTION("Roundtrip NamespacedWithEnum")
+  {
+    NamespacedWithEnum original{ NamespacedColor::Blue, NamespacedStatus::Running, 99 };
+    std::string json = ReflectionLibrary::to_json(original);
+    auto result = ReflectionLibrary::from_json<NamespacedWithEnum>(json);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->color == NamespacedColor::Blue);
+    REQUIRE(result->status == NamespacedStatus::Running);
+    REQUIRE(result->value == 99);
+  }
+}
+
+TEST_CASE("JSON serialize/deserialize deep namespaced struct", "[json][namespace]")
+{
+  using namespace Outer::Inner;
+
+  SECTION("Serialize DeepNamespacedStruct")
+  {
+    DeepNamespacedStruct obj{ 123, "deep test" };
+    std::string json = ReflectionLibrary::to_json(obj);
+    REQUIRE_FALSE(json.empty());
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("id"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("123"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("description"));
+    REQUIRE_THAT(json, Catch::Matchers::ContainsSubstring("deep test"));
+  }
+
+  SECTION("Roundtrip DeepNamespacedStruct")
+  {
+    DeepNamespacedStruct original{ 123, "deep test" };
+    std::string json = ReflectionLibrary::to_json(original);
+    auto result = ReflectionLibrary::from_json<DeepNamespacedStruct>(json);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->id == 123);
+    REQUIRE(result->description == "deep test");
+  }
+}

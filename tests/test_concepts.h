@@ -21,3 +21,29 @@ TEST_CASE("Concepts Tests", "[concepts]")
     REQUIRE(ReflectionLibrary::is_optional_v<Simple> == false);
   }
 }
+
+TEST_CASE("Concepts Tests - Namespaced types", "[concepts][namespace]")
+{
+  using namespace TestNamespace;
+
+  SECTION("Concept is_reflectable_v for namespaced structs")
+  {
+    REQUIRE(ReflectionLibrary::is_reflectable_v<NamespacedSimple> == true);
+    REQUIRE(ReflectionLibrary::is_reflectable_v<NamespacedNested> == true);
+    REQUIRE(ReflectionLibrary::is_reflectable_v<NamespacedComplex> == true);
+    REQUIRE(ReflectionLibrary::is_reflectable_v<NamespacedWithEnum> == true);
+  }
+
+  SECTION("Concept is_reflected_enum_v for namespaced enums")
+  {
+    REQUIRE(ReflectionLibrary::is_reflected_enum_v<NamespacedColor> == true);
+    REQUIRE(ReflectionLibrary::is_reflected_enum_v<NamespacedStatus> == true);
+  }
+
+  SECTION("Deep namespaced types")
+  {
+    using namespace Outer::Inner;
+    REQUIRE(ReflectionLibrary::is_reflectable_v<DeepNamespacedStruct> == true);
+    REQUIRE(ReflectionLibrary::is_reflected_enum_v<DeepNamespacedEnum> == true);
+  }
+}

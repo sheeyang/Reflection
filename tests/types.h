@@ -152,3 +152,78 @@ struct WithEnum
   int value;
 };
 REFLECT_FIELDS(WithEnum, color, status, value)
+
+// Namespace tests
+namespace TestNamespace
+{
+  struct NamespacedSimple
+  {
+    int x;
+    double y;
+    std::string name;
+  };
+
+  struct NamespacedNested
+  {
+    NamespacedSimple simple;
+    int count;
+  };
+
+  struct NamespacedComplex
+  {
+    std::vector<int> numbers;
+    std::map<std::string, double> values;
+    std::optional<std::string> optionalText;
+  };
+
+  enum class NamespacedColor
+  {
+    Red,
+    Green,
+    Blue
+  };
+
+  enum class NamespacedStatus
+  {
+    Idle,
+    Running,
+    Stopped
+  };
+
+  struct NamespacedWithEnum
+  {
+    NamespacedColor color;
+    NamespacedStatus status;
+    int value;
+  };
+}
+
+REFLECT_FIELDS(TestNamespace::NamespacedSimple, x, y, name)
+REFLECT_FIELDS(TestNamespace::NamespacedNested, simple, count)
+REFLECT_FIELDS(TestNamespace::NamespacedComplex, numbers, values, optionalText)
+REFLECT_ENUM(TestNamespace::NamespacedColor, Red, Green, Blue)
+REFLECT_ENUM(TestNamespace::NamespacedStatus, Idle, Running, Stopped)
+REFLECT_FIELDS(TestNamespace::NamespacedWithEnum, color, status, value)
+
+// Nested namespace tests
+namespace Outer
+{
+  namespace Inner
+  {
+    struct DeepNamespacedStruct
+    {
+      int id;
+      std::string description;
+    };
+
+    enum class DeepNamespacedEnum
+    {
+      First,
+      Second,
+      Third
+    };
+  }
+}
+
+REFLECT_FIELDS(Outer::Inner::DeepNamespacedStruct, id, description)
+REFLECT_ENUM(Outer::Inner::DeepNamespacedEnum, First, Second, Third)
